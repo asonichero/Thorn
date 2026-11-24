@@ -75,7 +75,8 @@ const REACT = {
 };
 
 // Aftercare: the conversation once it's over. Her opening line (by outcome: done, or word if she called it; or, if it ended with her defiance
-// still standing, unbroken: short, guarded), three ways James can answer (reassure her; say why it mattered, in his own words; ask how she
+// still standing, unbroken: short, guarded; or, her feelings for him grown strong (docs/lore.md), fond: warmer, wanting him near), three ways
+// James can answer (reassure her; say why it mattered, in his own words; ask how she
 // is), each with her reply; then what she's to do with the rest of the evening, with her answer; and a last word.
 const APPROACH = [
   { id: 'reassure', label: 'Reassure her', captain: ['It’s done. It stays done. You’re all right, and so are we.', 'Come here. It’s over, and nobody’s going anywhere.'] },
@@ -90,26 +91,32 @@ const ORDERS = [
 ];
 const AFTER = {
   rose: {
-    open: { done: ['…I’m all right. I’m all right.', 'That was worse than the woods in the dark. Almost.'], word: ['I’m sorry. I had to say it. It was too much.'], unbroken: ['Can I go home now?', 'Fine. I heard you.'] },
+    open: { done: ['…I’m all right. I’m all right.', 'That was worse than the woods in the dark. Almost.'], word: ['I’m sorry. I had to say it. It was too much.'], unbroken: ['Can I go home now?', 'Fine. I heard you.'],
+      fond: ['…Stay a minute? Just like this.', '…I like it when you’re like this, after. Steady.', '…Don’t go anywhere yet.'] },
     why: 'I can’t look after you if your phone’s dead and you’re halfway through the woods in the dark with your music up. I need to know where you are. That’s all this is.',
     reply: { reassure: '…Thank you. I needed to hear you say it.', explain: 'I know. It’s just— walking’s the only time nobody wants anything from me.', ask: 'Shaky. Warm. Like after a long walk home.' },
     order: { rest: 'Mum’ll want to know why I’m in bed at eight. …I’ll tell her I was tired. It’s true.', supper: 'Only if I bring the bread. It’s better than anything you’ve got in.',
       sofa: 'I’d like that. Will you tell me about the old oak again?', work: 'Nan’s. By the road. The whole way. And I’ll text.' },
-    close: '…Thank you, James.',
+    close: '…Thank you, James.', closeFond: '…Thank you, James. For all of it. Not just— you know. All of it.',
   },
 };
-// The terms (the first time, before he ever corrects her): James sets out what he expects and what he'll do; she agrees, and she chooses her
-// word, which stops anything at once. Steps for js/talk.js: lines, then her answer.
+// The terms (the first time, before he ever corrects her: docs/lore.md): she asks, and says why; James sets out what he'll hold her to and what
+// he'll do, and that none of it is owed and she can take it back; she agrees, and she chooses her word, which stops anything at once. Steps
+// for js/talk.js: lines, then her answer.
 const TERMS = {
   rose: [
-    { who: 'captain', text: 'If we’re doing this, we do it properly. When you put yourself at risk, when you go quiet on me and walk home through the woods in the dark, I deal with it. Me, across my knee. Then it’s done.' },
-    { who: 'subject', text: 'You’d really— you’d actually do that?' },
-    { who: 'captain', text: 'Because I don’t want to find you at the bottom of a gully. You can say no. Then we don’t, and nothing else changes between us.' },
+    { who: 'subject', text: 'I scared Mum half to death last winter. And Nan, sitting up by the window. I keep saying I’ll be careful, and then I just… drift.' },
+    { who: 'subject', text: 'I need someone who’ll actually hold me to it. Who’ll notice. And then let it be done with, so I’m not carrying it round.' },
+    { who: 'captain', text: 'And you want that to be me.' },
+    { who: 'subject', text: 'You’re the only one who’d do it properly. Without making me feel small.' },
+    { who: 'captain', text: 'Then we do it properly. When you put yourself at risk, when you go quiet on me and walk home through the woods in the dark, I deal with it. Me, across my knee. Then it’s done, and it stays done.' },
+    { who: 'subject', text: 'And if I change my mind?' },
+    { who: 'captain', text: 'Then you say so, and it stops, and nothing else changes between us. You don’t owe me this. Not now, not ever.' },
   ],
 };
 // (her agreement, and her word, in her voice)
 const AGREE = {
-  rose: ['…All right. I’d rather it was you.', 'My word’s {word}. For the one Nan leaves in the window.'],
+  rose: ['…All right. Yes. I want it to be you.', 'My word’s {word}. For the one Nan leaves in the window.'],
 };
 const WORD_ASK = 'And a word. If it’s ever more than you can bear, you say it, and it stops at once. Whatever it is, wherever we are.';
 
@@ -130,16 +137,17 @@ function captain(key, id) { return CAPTAIN[key] ? fill(pick(CAPTAIN[key]), id) :
 // The aftercare conversation, as steps for the page to play (js/talk.js): { who: 'subject' | 'captain', text } lines, and { choose: [{ label,
 // then: [...] }] }: what James says, explored (any or all of reassuring her, saying why it mattered, asking how she is), then what she's to do
 // with the rest of the evening, one of them.
-// (mood 'unbroken': it ended with her defiance still standing; the safe word's opening comes first all the same)
+// (mood 'unbroken': it ended with her defiance still standing; 'fond': her feelings for him grown strong (docs/lore.md); the safe word's
+// opening comes first all the same)
 function after(id, outcome, mood) {
-  const A = AFTER[id] || AFTER_ANY, k = outcome === 'word' ? 'word' : mood === 'unbroken' && A.open.unbroken ? 'unbroken' : 'done', open = pick(A.open[k]);
+  const A = AFTER[id] || AFTER_ANY, k = outcome === 'word' ? 'word' : mood === 'unbroken' && A.open.unbroken ? 'unbroken' : mood === 'fond' && A.open.fond ? 'fond' : 'done', open = pick(A.open[k]);
   const said = a => (a.id === 'explain' ? A.why : pick(a.captain));
   return [
-    { who: 'subject', text: fill(open, id), expr: k === 'word' ? 'sad' : k === 'unbroken' ? 'defiant' : 'teary' },
+    { who: 'subject', text: fill(open, id), expr: k === 'word' ? 'sad' : k === 'unbroken' ? 'defiant' : k === 'fond' ? 'tender' : 'teary' },
     { explore: true, choose: APPROACH.map(a => ({ label: a.label, approach: a.id, then: [{ who: 'captain', text: fill(said(a), id) }, { who: 'subject', text: fill(A.reply[a.id], id), expr: a.id === 'reassure' ? 'teary' : a.id === 'explain' ? 'concerned' : 'wistful' }] }))
       .concat([{ label: 'Tell her what’s next', end: true, then: [] }]) },
     { choose: ORDERS.map(o => ({ label: o.label, order: o.id, then: [{ who: 'captain', text: fill(o.captain, id) }, { who: 'subject', text: fill(A.order[o.id], id), expr: 'soft' }] })) },
-    { who: 'subject', text: fill(A.close, id), expr: 'soft' },
+    { who: 'subject', text: fill(k === 'fond' && A.closeFond ? A.closeFond : A.close, id), expr: k === 'fond' ? 'tender' : 'soft' },
   ];
 }
 // The terms, as steps: James's terms and her question, then he asks for her word, and she agrees and gives it.

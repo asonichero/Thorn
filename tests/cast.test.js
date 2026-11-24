@@ -36,3 +36,22 @@ test('each outfit as a figure: off duty in her own; nothing on (None); James in 
   for (const k of Cast.squireOutfits()) { const s = Cast.squireSpec({ outfit: k }); assert.equal(s.sex, 'm'); assert.equal(s.outfit, 'offduty'); assert.equal(s.off, Cast.SQUIRE.wardrobe[k]); }
   assert.equal(Cast.squireSpec({ outfit: 'none' }).outfit, 'none'); assert.equal(Cast.squireSpec().outfitKey, 'tee');
 });
+
+test('the premise: she asked him, for her own reasons, on terms; his steadiness grows her trust and, as most do, her feelings for him', () => {
+  const R = Cast.ROSTER.rose;
+  assert.ok(R.agreed.reasons.length && R.agreed.reasons.every(k => Cast.REASONS[k]), 'her reasons are the premise’s: guilt, habits, behaviour');
+  assert.ok(R.agreed.story && !/girlfriend/i.test(R.role), 'someone in his life who asked, not cast as his partner from the start');
+  assert.ok(R.feelings.rate > 0 && R.feelings.text);
+  // (a correction seen through with care, every way of answering her taken: her trust and her feelings for him grow, and more than with none)
+  const rel = { submission: 0, desire: 0.1, comfort: 0.2, defiance: 0.3, resentment: 0 }, r = { outcome: 'done', compliance: 0.3 };
+  const all = Cast.grow('rose', rel, Object.assign({ approaches: ['reassure', 'explain', 'ask'] }, r)), none = Cast.grow('rose', rel, r);
+  assert.ok(all.delta.comfort > none.delta.comfort && all.delta.desire > none.delta.desire && none.delta.desire > 0);
+  assert.ok(all.rel.comfort > rel.comfort && all.rel.desire > rel.desire && all.rel.submission > 0); assert.equal(rel.comfort, 0.2, 'the one given is left as it was');
+  // (the more she trusts him, the faster her feelings; resentment holds it back; her word builds trust only)
+  assert.ok(Cast.grow('rose', Object.assign({}, rel, { comfort: 0.9 }), r).delta.desire > none.delta.desire);
+  assert.ok(Cast.grow('rose', Object.assign({}, rel, { resentment: 0.8 }), r).delta.desire < none.delta.desire);
+  const w = Cast.grow('rose', rel, { outcome: 'word', compliance: 0.2 }); assert.ok(w.delta.comfort > 0); assert.equal(w.delta.desire, 0); assert.equal(w.delta.submission, 0);
+  // (over many, it settles toward the top, never past it)
+  let x = rel; for (let i = 0; i < 60; i++) x = Cast.grow('rose', x, Object.assign({ approaches: ['reassure', 'ask'] }, r)).rel;
+  assert.ok(x.desire > 0.8 && x.desire <= 1 && x.comfort <= 1);
+});

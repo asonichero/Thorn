@@ -28,8 +28,16 @@ test('the aftercare: her opening by how it ended, three ways to answer her, then
   }
 });
 
-test('her terms: his, her question, her agreement, and her word', () => {
+test('her terms: she asks him and says why; his terms, that nothing is owed; her agreement, and her word', () => {
   const steps = Lines.terms('rose'), last = steps[steps.length - 1];
+  assert.equal(steps[0].who, 'subject', 'she asks'); assert.ok(steps.some(s => s.who === 'captain' && /owe/.test(s.text)), 'none of it owed');
   assert.ok(steps.length >= 6); assert.equal(last.who, 'captain'); assert.match(last.text, /Lantern/);
   assert.ok(steps.some(s => s.who === 'subject' && /Lantern/.test(s.text)), 'she gives it');
+});
+
+test('the aftercare warmer once her feelings for him are strong: a fond opening and close', () => {
+  const fond = Lines.after('rose', 'done', 'fond'), plain = Lines.after('rose', 'done', null);
+  assert.ok(Lines.AFTER.rose.open.fond.includes(fond[0].text)); assert.equal(fond[0].expr, 'tender');
+  assert.notEqual(fond[3].text, plain[3].text);
+  assert.ok(Lines.AFTER.rose.open.word.includes(Lines.after('rose', 'word', 'fond')[0].text), 'her word’s opening first all the same');
 });

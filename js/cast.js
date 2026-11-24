@@ -1,6 +1,13 @@
 // Thorn — who's in it: James Edwards and Rose. Rose as Fenwick Hall has her (js/cast.js there: her body, her look, how she takes pain, her
 // wilfulness, her word, her temperament); James on Fenwick's Silas (his temperament, his build), his look his own. Both in the present day,
-// in modern clothes. The engine (js/session.js, ported from Fenwick
+// in modern clothes.
+//
+// The premise (docs/lore.md): the people James corrects are people in his life who trust him and have agreed, of their own accord, to give him
+// the authority to discipline them: to relieve guilt, to build habits, or to improve their behaviour (REASONS; each subject's `agreed`). It's
+// always on terms agreed first, with a word of their own that stops it at once, and aftercare after. Most of them come, in time, to have
+// romantic or sexual feelings for him, from the steady, supportive presence he is (each subject's `feelings`; Cast.grow, below).
+//
+// The engine (js/session.js, ported from Fenwick
 // and Project Meridian before it) reads the same fields Fenwick's roster gave it: pain, meters.wilfulness, body (h, mass, fat, bust,
 // response), dynamic, word, base, look, braces, and what James calls her (short).
 //
@@ -9,31 +16,39 @@
 // is one of the patterns js/figure.js draws on them (TOPS, LEGS, SHOES).
 //
 //   Cast.ROSTER.rose · Cast.IDS · Cast.SQUIRE · Cast.WARDROBE · Cast.outfits('rose') · Cast.figureSpec('rose', 'f', 'jeans') · Cast.squireSpec({ outfit })
+//   · Cast.REASONS · Cast.grow(id, rel, result)
 (function (root) {
 'use strict';
 const METERS = ['compliance', 'mindfulness', 'wilfulness'];
+// (why someone asks him: docs/lore.md)
+const REASONS = { guilt: 'to relieve guilt', habits: 'to build habits', behaviour: 'to improve her behaviour' };
 
 // ── Rose (Fenwick's Red: her given name; "Red" for the coat) ──
 // resist: how she resists, as two numbers, 0–1: overt (open defiance: the session's wilfulness) and covert (concealment, withholding).
 // pain: tolerance and resilience for js/pain.js. body: her height (metres), mass (muscle and frame), fat (softness), bust (0 small – 1 large),
 // response (her body's response to a correction: 1, as Meridian and Fenwick have it). look: skin, hair, its style (braid, with braidLen in head
 // units and its tie's colour), eyes. dynamic: romance, bond (affection given and returned, 0–1).
+// agreed: why she gave him the authority (REASONS) and how she came to it. feelings: how her feelings for him grow from his presence: rate
+// (0 never, 1 as most do, more for those it comes to easily), and what it's like for her.
 const ROSTER = {
   rose: {
-    id: 'rose', name: 'Rose', short: 'Rose', title: 'Rose', age: 19, role: 'Works the counter at her mum’s bakery; James’s girlfriend',
+    id: 'rose', name: 'Rose', short: 'Rose', title: 'Rose', age: 19, role: 'Works the counter at her mum’s bakery; asked James to hold her to account',
     about: {
       names: 'Rose. Her mum and her nan still call her Red, for the red coat she’s worn every winter since school.',
       flaw: 'Drifting: headphones in, phone on two per cent, the shortcut through the woods after dark, the warnings heard and not heeded.',
       history: 'Her dad died when she was small; her mum runs the bakery on the high street on her own, and Rose works the counter and the early ovens. Most evenings she takes something round to her nan, whose cottage is the far side of the woods.',
       temperament: 'Warm, generous with her attention, liked by everyone who comes into the shop. Restless under repetition, drawn off the path by whatever catches her eye. Under the cheerfulness, a low, constant unease about where her life is going.',
       resistance: 'Repetition, not rebellion: dawdling, straying, turning up late with a flat battery. What she’s corrected for is follow-through and presence of mind.',
-      terms: 'She asked for it, in the end: someone who’d notice, and mind. They agreed his terms between them, and her word, before he ever took her across his knee.',
+      terms: 'She asked for it: someone who’d notice, and mind. They agreed his terms between them, and her word, before he ever took her across his knee.',
     },
+    agreed: { reasons: ['habits', 'guilt'],
+      story: 'Last winter she went quiet for an evening and walked home through the woods in the dark; her mum rang round half the town and her nan sat up by the lantern in her window. She’s carried it since. James is in the shop every morning. She asked him to hold her to telling people where she is and keeping to the road, and to let her set the guilt down when she doesn’t.' },
+    feelings: { rate: 1.3, text: 'She arrives liking him a good deal already. His steadiness is what she’s never had, and her feelings for him grow easily.' },
     resist: { style: 'repetition', overt: 0.3, covert: 0.2 }, meters: { wilfulness: 0.3, compliance: 0.45, mindfulness: 0.3 },
     pain: { tolerance: 0.55, resilience: 0.58 },
     body: { type: 'sturdy from the ovens and the walk to her nan’s, average height', h: { f: 1.65 }, mass: 0.52, fat: 0.45, bust: 0.55, response: 1 },
     look: { skin: '#e8c4a4', hair: '#5a2a1e', hairStyle: 'braid', hairCap: 'swept', braidLen: 4.5, ribbon: '#a8282a', eyes: '#6a5a3a' },
-    dynamic: { romance: true, bond: 0.6 }, word: 'Lantern', base: 'smile',
+    dynamic: { romance: true, bond: 0.35 }, word: 'Lantern', base: 'smile',
   },
 };
 const IDS = Object.keys(ROSTER);
@@ -70,11 +85,12 @@ const outfits = id => Object.keys(WARDROBE[id] || {});
 // sweptback); a short, full beard, trimmed lower on the cheek (trim), gingery against his hair (spec.beardCol); brown eyes, hazel at their edge; fair skin, warm and a little
 // ruddy; a fuller face and frame. Most days a plain maroon T-shirt.
 const SQUIRE = {
-  id: 'james', name: 'James Edwards', short: 'James', title: 'James', role: 'Tree surgeon; Rose’s boyfriend', age: 37,
+  id: 'james', name: 'James Edwards', short: 'James', title: 'James', role: 'Tree surgeon; trusted, by the people in his life who ask it, to hold them to account', age: 37,
   about: {
     archetype: 'The practical woodsman. Self-reliant; works with his hands, reads the weather and the trees, lives simply.',
     temperament: ['Exacting and economical with words; warmth shows in what he does', 'Immovable once decided, because he checks his reasoning first', 'Dry humour, rare enough to feel earned', 'Unimpressed by vanity or excuses; deeply protective once someone is in his care'],
     method: 'Hears an account before he judges. Says what he expects plainly, and does what he said he would.',
+    arrangement: 'Corrects only those who’ve asked him to and agreed his terms; their word stops it at once; he stays afterwards, always. None of it is owed.',
   },
   look: { skin: '#ecc2a6', hair: '#4a2e1e', hairStyle: 'sweptback', eyes: '#6e4a2a', beard: true, beardCol: '#7e4e34', beardStyle: 'trim' },
   build: { mass: 0.6, fat: 0.52 }, h: 1.86,      // (one build: average, a little soft)
@@ -114,11 +130,29 @@ function wriggle(id) {
   const hn = Math.max(0, Math.min(1, (r.body.h.f - H_SPAN[0]) / (H_SPAN[1] - H_SPAN[0]))), size = 0.4 * hn + 0.6 * r.body.mass, tol = r.pain.tolerance;
   return Math.max(0.15, Math.min(1, 1.15 - size - 0.5 * (tol - 0.5)));
 }
+// ── What his steadiness does, over time (docs/lore.md) ──
+// After a correction he sees through with care, the aftercare done: her trust in him (comfort) grows, more the more ways he answered her
+// (reassured her, said why it mattered, asked how she is); where it's her way (feelings.rate), her feelings for him (desire) grow, more slowly,
+// and faster the more she trusts him; and what she took to heart leaves her a little readier to give way (submission). Resentment she
+// carries holds it all back. A correction ended by her word, heard and honoured at once, still builds a little trust, but not the rest.
+//   Cast.grow(id, rel, result) → { rel, delta }  (rel: submission, desire, comfort, defiance, resentment, 0–1; result: js/session.js's, with
+//   approaches: the ways he answered her)
+function grow(id, rel, r) {
+  const R = ROSTER[id], rate = R && R.feelings ? R.feelings.rate : 0, c01 = x => Math.max(0, Math.min(1, x)), r2 = x => Math.round(x * 1000) / 1000;
+  const n = new Set(r.approaches || []).size, care = 0.4 + 0.2 * Math.min(3, n), res = c01(rel.resentment || 0), comfort = c01(rel.comfort || 0), word = r.outcome === 'word';
+  const delta = {
+    comfort: r2((word ? 0.03 : 0.06 * care) * (1 - 0.6 * res)),
+    desire: r2(word ? 0 : 0.045 * rate * care * (0.5 + 0.5 * comfort) * (1 - res)),
+    submission: r2(word ? 0 : 0.12 * Math.max(0, r.compliance || 0) * (1 - res)),
+  };
+  const out = Object.assign({}, rel); for (const k in delta) out[k] = r2(c01((rel[k] || 0) + delta[k]));
+  return { rel: out, delta };
+}
 // Voice pitch for the babble and cries (Hz).
 const PITCH = { james: 116, rose: 210 };
 const pitch = id => PITCH[id] || 208;
 
-const api = { METERS, ROSTER, IDS, SQUIRE, WARDROBE, OUTFIT_NOTES, outfits, squireOutfits, pronouns, figureSpec, squireSpec, pitch, wriggle };
+const api = { METERS, REASONS, ROSTER, IDS, SQUIRE, WARDROBE, OUTFIT_NOTES, outfits, squireOutfits, pronouns, figureSpec, squireSpec, pitch, wriggle, grow };
 if (typeof module !== 'undefined' && module.exports) module.exports = api;
 root.Cast = api;
 })(typeof window !== 'undefined' ? window : globalThis);

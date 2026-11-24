@@ -67,7 +67,7 @@ kbd { font: 10px ui-monospace, monospace; color: var(--dim); }
 
 <div id="panel" class="box">
   <h1>Correction test</h1>
-  <p class="sub">The living room, at night. You’re James. One whole correction: placed, run as you judge it, ended, then the aftercare. If it goes too far she says her word, and it stops at once.</p>
+  <p class="sub">The living room, at night. You’re James. Rose is one of the people in your life who trust you, and she has asked you, on terms you agreed, to hold her to account. One whole correction: placed, run as you judge it, ended, then the aftercare. If it goes too far she says her word, and it stops at once.</p>
   <h2>Her</h2><div id="her"></div>
   <h2>Outfit</h2><div class="row" id="outfit"></div>
   <h2>Clothes</h2><div class="row"><button id="pTop"></button><button id="pBot"></button><button id="pUnd"></button></div>
@@ -76,11 +76,11 @@ kbd { font: 10px ui-monospace, monospace; color: var(--dim); }
   <h2>Position</h2><div class="row" id="pos"></div>
   <small class="note" id="posNote"></small>
   <h2>Where she is with him</h2><div class="rel" id="rel"></div>
-  <small class="note">How she takes it: defiant, head up and looking back, her hand back over her seat, slow to settle and slow to break; submissive, still sooner; comfortable, freer; desire, her body’s response. Resentment is what she carries in (half of it on top of her defiance); a correction past what she can bear adds to it, and the aftercare clears half. Changes take effect at once.</small>
+  <small class="note">How she takes it: defiant, head up and looking back, her hand back over her seat, slow to settle and slow to break; submissive, still sooner; comfortable (her trust in you), freer; desire (her feelings for you), her body’s response, and closer to you after. Each correction you see through with care builds her trust, and her feelings for you with it, the more ways you answer her in the aftercare; they carry over to the next. Resentment is what she carries in (half of it on top of her defiance); a correction past what she can bear adds to it, and the aftercare clears half. Changes take effect at once.</small>
   <h2>Expression</h2><select id="expr"></select>
   <h2>Response</h2><div class="row" style="gap:8px"><input type="range" id="resp" min="0" max="100" step="1" style="flex:1;accent-color:var(--amber)"><span id="respV" style="font-size:12px;color:var(--dim);width:34px;text-align:right"></span><button id="respAuto">Auto</button></div>
   <h2>Before it, and sound</h2><div class="row"><button id="terms">Her terms first</button><button id="sound">Sound off</button></div>
-  <small class="note">Her terms: the conversation, before he ever corrects her, where he sets out how it works and she agrees, and gives her word.</small>
+  <small class="note">Her terms: the conversation, before you ever correct her, where she asks you and says why, you set out how it works and that none of it is owed, and she agrees and gives her word.</small>
   <div class="row" style="margin-top:12px"><button id="begin" class="on">Begin again</button></div>
   <small class="note">An outfit, or James’s, begins it again. Drag to look round, scroll or pinch to come closer.</small>
 </div>
@@ -119,7 +119,8 @@ kbd { font: 10px ui-monospace, monospace; color: var(--dim); }
 // left, and a whole correction run on it (js/session.js) as Fenwick's correction test runs one: she's placed, the player runs it (runs of
 // smacks on a toggle, pace, strength, side, where, soothing, her clothes), and it ends when they end it (James soothes her and dresses her) or
 // when she says her word; then the aftercare on the sofa, the conversation (js/lines.js, js/talk.js), and what came of it. Not the figures
-// page's loop, round after round: one correction, start to finish, and Begin again for another.
+// page's loop, round after round: one correction, start to finish, and Begin again for another. The premise (docs/lore.md): she asked him, for
+// her own reasons, and his steadiness grows her trust and her feelings for him from one correction to the next (Cast.grow, after each aftercare).
 //   ?outfit=jeans&clothes=down,up,up&sout=henley&pos=otk|otk:sofa|table|wall&def=&sub=&des=&com=&res=&expr=auto&resp=auto&terms=1&still=1
 const $ = id => document.getElementById(id), q = new URLSearchParams(location.search), V3 = THREE.Vector3;
 const ID = Cast.IDS[0], R = Cast.ROSTER[ID], KEY = 'thorn:correction:v1';
@@ -192,10 +193,14 @@ async function aftercare(r) {
   const s = ses; if (!s) return;
   fade(); s.aftercare(r.id); s.camera(0, 0); drawCams(); refresh();
   if (cfg.sound && window.GameAudio && GameAudio.ctx) GameAudio.startMusic({ theme: 'after' });
-  await play(Lines.after(r.id, r.outcome, r.defiance && r.defiance.to > 0.45 ? 'unbroken' : null), r.id, s.people[0], r);
+  // (warmer, once her feelings for him are strong; guarded if her defiance never broke)
+  const mood = r.defiance && r.defiance.to > 0.45 ? 'unbroken' : cfg.rel.desire >= 0.5 ? 'fond' : null;
+  await play(Lines.after(r.id, r.outcome, mood), r.id, s.people[0], r);
   if (s !== ses) return;
   s.cared(r.id);
-  cfg.rel.resentment = Math.round(cfg.rel.resentment * 50) / 100; save(); relSliders();      // (half of what she carries, cleared by it)
+  cfg.rel.resentment = Math.round(cfg.rel.resentment * 50) / 100;      // (half of what she carries, cleared by it)
+  // (and what his steadiness does: her trust, her feelings for him, carried on to the next: Cast.grow)
+  const g = Cast.grow(r.id, cfg.rel, r); r.grew = g.delta; Object.assign(cfg.rel, g.rel); save(); relSliders();
   sayHide(); last = r; summary(r);
 }
 const pc = x => Math.round(x * 100) + '%';
@@ -212,6 +217,7 @@ function summary(r) {
     <tr><td>Compliance</td><td>+${pc(r.compliance)}</td></tr>
     <tr><td>Resentment</td><td>+${pc(r.resentment)} (she carries ${pc(cfg.rel.resentment)} now)</td></tr>
     <tr><td>He said</td><td>${said.length ? said.join('; ') : '—'}</td></tr>
+    <tr><td>Between them</td><td>${r.grew ? `trust +${pc(r.grew.comfort)} (${pc(cfg.rel.comfort)}), her feelings for him +${pc(r.grew.desire)} (${pc(cfg.rel.desire)}), submission +${pc(r.grew.submission)}` : '—'}</td></tr>
     <tr><td>And then</td><td>${r.order || '—'}</td></tr></table>
     <div class="row"><button class="on" id="again">Begin again</button><button id="close">Stay with them</button></div>`;
   S.style.display = 'block'; $('again').onclick = () => { audioOn(); begin(); }; $('close').onclick = () => { S.style.display = 'none'; };
@@ -246,12 +252,13 @@ function choose(options) {
 const play = (steps, id, P, r) => Talk.play(steps, {
   line: (s, hold) => { const who = s.who === 'captain' ? 'captain' : id; if (s.expr && ses) { if (s.who === 'captain') ses.captain.setExpr(s.expr); else if (P) P.f.setExpr(s.expr); } return showLine(s.who, who, s.text, hold); },
   choose: options => choose(options),
-  took: o => { if (!r) return; r.choice = r.choice || []; r.choice.push(o.label); if (o.order) r.order = o.label; },
+  took: o => { if (!r) return; r.choice = r.choice || []; r.choice.push(o.label); if (o.order) r.order = o.label; if (o.approach) (r.approaches = r.approaches || []).push(o.approach); },
 });
 
 // ── The panel ──
 const seg = (id, items, cur, fn) => { const el = $(id); el.innerHTML = ''; for (const [v, label, title] of items) { const b = document.createElement('button'); b.textContent = label; if (title) b.title = title; b.className = v === cur ? 'on' : ''; b.onclick = () => fn(v); el.append(b); } };
-$('her').innerHTML = `<b>${R.name}</b>, ${R.age}<small>${R.role}</small><small>${R.about.temperament.split('. ')[0]}.</small><small>Her word: <b style="font-size:12px">${R.word}</b></small>`;
+$('her').innerHTML = `<b>${R.name}</b>, ${R.age}<small>${R.role}</small><small>${R.about.temperament.split('. ')[0]}.</small>`
+  + `<small>Why she asked you: ${R.agreed.reasons.map(k => Cast.REASONS[k]).join(', and ')}.</small><small>Her word: <b style="font-size:12px">${R.word}</b></small>`;
 function relSliders() {
   const el = $('rel'); el.innerHTML = '';
   for (const [k, nm] of [['defiance', 'Defiance'], ['submission', 'Submission'], ['desire', 'Desire'], ['comfort', 'Comfort'], ['resentment', 'Resentment']]) {
