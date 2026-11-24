@@ -1,0 +1,417 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Thorn · Correction test</title>
+<style>
+:root { --panel: rgba(250, 246, 238, 0.93); --line: #cdbfa8; --ink: #2a2018; --dim: #76685a; --amber: #b07a2a; --red: #b8402e; --teal: #3e7a6a; }
+html, body { margin: 0; height: 100%; background: #14110e; color: var(--ink); font: 13px/1.4 system-ui, -apple-system, "Segoe UI", sans-serif; overflow: hidden; }
+#view { position: fixed; inset: 0; }
+.box { background: var(--panel); border: 1px solid var(--line); border-radius: 16px; backdrop-filter: blur(6px); box-shadow: 0 6px 24px rgba(20, 14, 8, 0.22); box-sizing: border-box; }
+h1 { font: 600 17px Georgia, 'Iowan Old Style', serif; margin: 0 0 2px; } h2 { font-size: 10px; text-transform: uppercase; letter-spacing: 0.12em; color: var(--dim); margin: 12px 0 5px; }
+p.sub { margin: 0 0 4px; color: var(--dim); font-size: 12px; }
+.row { display: flex; flex-wrap: wrap; gap: 5px; align-items: center; }
+button, select { font: inherit; color: var(--ink); background: #fff; border: 1px solid var(--line); border-radius: 10px; padding: 5px 9px; cursor: pointer; }
+select { width: 100%; padding: 6px 8px; } button:hover { border-color: #a89e90; } button.on { background: #f0dcb4; border-color: var(--amber); color: #5a3a10; } button:disabled { opacity: 0.45; cursor: default; }
+a { color: var(--dim); } small.note { display: block; color: var(--dim); font-size: 11px; margin-top: 5px; line-height: 1.4; }
+kbd { font: 10px ui-monospace, monospace; color: var(--dim); }
+
+/* The character panel, as Fenwick's figures page has it: who she is, her outfit, her clothes, Silas's, where they are, where she is with him,
+   her expression and her body's response. Down the left. */
+#panel { position: fixed; top: calc(12px + env(safe-area-inset-top)); left: calc(12px + env(safe-area-inset-left)); width: 300px; max-height: calc(100% - 24px); overflow: auto; padding: 12px 14px; z-index: 4; }
+#hide { position: fixed; top: calc(12px + env(safe-area-inset-top)); left: calc(324px + env(safe-area-inset-left)); z-index: 5; } #panel.closed { display: none; }
+#her { font-size: 12px; } #her b { font: 600 14px Georgia, serif; } #her small { display: block; color: var(--dim); }
+.rel { display: grid; grid-template-columns: auto 1fr 34px; gap: 4px 8px; align-items: center; font-size: 12px; } .rel input { width: 100%; accent-color: var(--amber); } .rel span { color: var(--dim); text-align: right; }
+
+/* The correction's HUD, down the right: who and where it's got to, the cameras, the controls, the meter. */
+#hud { position: fixed; top: calc(12px + env(safe-area-inset-top)); right: calc(12px + env(safe-area-inset-right)); width: 400px; max-height: calc(100% - 24px); display: flex; flex-direction: column; gap: 8px; z-index: 3; }
+#who { padding: 9px 14px; } #who .nm { font: 600 15px Georgia, serif; } #who small { color: var(--dim); display: block; } #who .ph { color: #6a3a10; font-weight: 600; }
+#cams { display: flex; gap: 4px; flex-wrap: wrap; } #cams button { flex: 1 1 auto; padding: 5px 6px; font-size: 13px; }
+#bar { padding: 10px 12px 8px; overflow-y: auto; flex: 0 1 auto; }
+#bar .top { display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; align-items: end; }
+#bar .grp { display: flex; flex-direction: column; gap: 4px; min-width: 0; } #bar .lab { font-size: 10px; text-transform: uppercase; letter-spacing: 0.12em; color: var(--dim); }
+.g-run { grid-column: span 2; } .g-soothe { grid-column: span 2; } .g-end { grid-column: span 2; } .g-pace, .g-str, .g-side, .g-where { grid-column: span 3; } .g-clothes, .g-impl { grid-column: 1 / -1; }
+#run, #end, #soothe { width: 100%; } #run { font-size: 16px; padding: 9px 10px; border-radius: 14px; } #run.on { background: #f4d4c8; border-color: var(--red); color: #6a1a10; }
+#bar .seg, .g-clothes .row { display: flex; flex-wrap: nowrap; gap: 0; } #impl button.na { text-decoration: line-through; } #bar .seg button, .g-clothes .row button { flex: 1 1 0; min-width: 0; padding-left: 4px; padding-right: 4px; font-size: 13px; }
+#bar .seg button { border-radius: 0; margin-left: -1px; } #bar .seg button:first-child { border-radius: 10px 0 0 10px; } #bar .seg button:last-child { border-radius: 0 10px 10px 0; }
+.g-clothes .row { gap: 5px; } .g-pace .row, .g-str .row { justify-content: space-between; flex-wrap: nowrap; } .val { min-width: 38px; text-align: center; color: var(--amber); }
+#meter { margin-top: 10px; display: flex; flex-direction: column; gap: 5px; }
+#track { position: relative; width: 100%; height: 10px; background: #e6dccb; border-radius: 6px; overflow: hidden; border: 1px solid var(--line); }
+#fill { position: absolute; left: 0; top: 0; bottom: 0; width: 0; background: linear-gradient(90deg, #4a8a7a, #c8a040 45%, #d8603e 70%, #a02a3a); }
+#track .tick { position: absolute; top: 0; bottom: 0; width: 1px; background: rgba(40, 30, 20, 0.3); } #track .harsh { width: 2px; background: var(--red); }
+#info { font-size: 12px; color: var(--dim); min-height: 1.3em; } #info b { color: var(--ink); }
+
+/* What's said, at the foot, centred; her word when she calls it; the summary at the end. */
+#dock { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(14px + env(safe-area-inset-bottom)); width: min(700px, calc(100% - 24px)); display: flex; flex-direction: column; align-items: center; pointer-events: none; z-index: 3; }
+#dock > * { pointer-events: auto; }
+#say { position: relative; width: 100%; padding: 14px 18px 12px; display: none; }
+#say .who { position: absolute; top: -12px; left: 18px; background: #fbf6ec; border: 1px solid var(--line); border-radius: 10px; padding: 1px 10px; font-size: 12px; color: var(--red); font-weight: 600; }
+#say .who.cap { color: var(--teal); } #say.wait { cursor: pointer; }
+#say .txt { font-family: Georgia, 'Iowan Old Style', serif; font-size: 17px; min-height: 22px; } #say .choices { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+#say .next { display: none; position: absolute; right: 12px; bottom: 6px; font-size: 13px; color: var(--amber); animation: nudge 1.1s ease-in-out infinite; pointer-events: none; }
+@keyframes nudge { 0%, 100% { opacity: 0.35; transform: translateX(0); } 50% { opacity: 1; transform: translateX(3px); } }
+#word { position: fixed; top: calc(16px + env(safe-area-inset-top)); left: 50%; transform: translateX(-50%); z-index: 4; max-width: calc(100% - 40px); padding: 10px 18px; display: none; color: #6a1a10; border-color: var(--red); font-weight: 600; text-align: center; }
+#summary { position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); padding: 16px 20px; display: none; width: min(440px, calc(100% - 32px)); max-height: calc(100% - 32px); overflow: auto; z-index: 6; }
+#summary h2 { font: 600 16px Georgia, serif; text-transform: none; letter-spacing: 0; color: var(--ink); margin: 0 0 6px; }
+#summary table { border-collapse: collapse; width: 100%; margin: 4px 0 12px; } #summary td { padding: 4px 6px; border-bottom: 1px solid var(--line); font-size: 13px; vertical-align: top; } #summary td:first-child { color: var(--dim); white-space: nowrap; }
+#fade { position: fixed; inset: 0; background: #05070a; opacity: 0; pointer-events: none; transition: opacity 0.35s ease; z-index: 5; } #fade.on { opacity: 1; transition: none; }
+
+@media (min-width: 861px) and (min-height: 561px) { #dock { left: calc(336px + env(safe-area-inset-left)); right: calc(424px + env(safe-area-inset-right)); width: auto; transform: none; } }
+@media (max-width: 860px), (max-height: 560px) {
+  #panel { width: auto; right: 12px; max-height: 46%; top: auto; bottom: calc(12px + env(safe-area-inset-bottom)); z-index: 6; } #hide { left: auto; right: 12px; top: auto; bottom: calc(12px + env(safe-area-inset-bottom)); z-index: 7; }
+  #panel:not(.closed) ~ #hide { bottom: calc(46% + 18px); }
+  #hud { width: auto; left: 12px; right: 12px; max-height: 52%; } #bar .top { gap: 6px; } kbd { display: none; } #cams button { font-size: 12px; }
+  #dock { bottom: calc(60px + env(safe-area-inset-bottom)); } #say .txt { font-size: 14px; }
+}
+@media (hover: none) { kbd { display: none; } button { min-height: 34px; } }
+</style></head>
+<body><div id="view"></div>
+
+<div id="panel" class="box">
+  <h1>Correction test</h1>
+  <p class="sub">The living room, at night. You’re Silas. One whole correction: placed, run as you judge it, ended, then the aftercare. If it goes too far she says her word, and it stops at once.</p>
+  <h2>Her</h2><div id="her"></div>
+  <h2>Outfit</h2><div class="row" id="outfit"></div>
+  <h2>Clothes</h2><div class="row"><button id="pTop"></button><button id="pBot"></button><button id="pUnd"></button></div>
+  <small class="note">Before it begins, how she starts; in it, Silas changes them, seen.</small>
+  <h2>Silas</h2><div class="row" id="sout"></div>
+  <h2>Position</h2><div class="row" id="pos"></div>
+  <small class="note" id="posNote"></small>
+  <h2>Where she is with him</h2><div class="rel" id="rel"></div>
+  <small class="note">How she takes it: defiant, head up and looking back, her hand back over her seat, slow to settle and slow to break; submissive, still sooner; comfortable, freer; desire, her body’s response. Resentment is what she carries in (half of it on top of her defiance); a correction past what she can bear adds to it, and the aftercare clears half. Changes take effect at once.</small>
+  <h2>Expression</h2><select id="expr"></select>
+  <h2>Response</h2><div class="row" style="gap:8px"><input type="range" id="resp" min="0" max="100" step="1" style="flex:1;accent-color:var(--amber)"><span id="respV" style="font-size:12px;color:var(--dim);width:34px;text-align:right"></span><button id="respAuto">Auto</button></div>
+  <h2>Before it, and sound</h2><div class="row"><button id="terms">Her terms first</button><button id="sound">Sound off</button></div>
+  <small class="note">Her terms: the conversation, before he ever corrects her, where he sets out how it works and she agrees, and gives her word.</small>
+  <div class="row" style="margin-top:12px"><button id="begin" class="on">Begin again</button></div>
+  <small class="note">An outfit, or Silas’s, begins it again. Drag to look round, scroll or pinch to come closer.</small>
+</div>
+<button id="hide" class="box">☰</button>
+
+<div id="hud">
+  <div id="who" class="box"><div class="nm" id="whoNm">—</div><small id="whoSub"></small><small class="ph" id="whoPhase"></small></div>
+  <div id="cams"></div>
+  <div id="bar" class="box">
+    <div class="top">
+      <div class="grp g-run"><span class="lab">Run <kbd>Space</kbd></span><button id="run">Start run</button></div>
+      <div class="grp g-soothe"><span class="lab">Soothe <kbd>S</kbd></span><button id="soothe">Soothe</button></div>
+      <div class="grp g-end"><span class="lab">End it <kbd>Enter</kbd></span><button id="end">End</button></div>
+      <div class="grp g-pace"><span class="lab">Pace <kbd>[ ]</kbd></span><div class="row"><button data-k="pace" data-d="-0.25">−</button><span class="val" id="paceV">1×</span><button data-k="pace" data-d="0.25">+</button></div></div>
+      <div class="grp g-str"><span class="lab">Strength <kbd>- =</kbd></span><div class="row"><button data-k="strength" data-d="-0.25">−</button><span class="val" id="strengthV">1×</span><button data-k="strength" data-d="0.25">+</button></div></div>
+      <div class="grp g-side"><span class="lab">Side <kbd>D</kbd></span><div class="row seg" id="side"><button data-v="alt" class="on">Alt</button><button data-v="L">Left</button><button data-v="R">Right</button></div></div>
+      <div class="grp g-where"><span class="lab">Where <kbd>A</kbd></span><div class="row seg" id="area"><button data-v="cheek">Cheek</button><button data-v="sitspot" class="on">Sit spot</button><button data-v="thighs">Thighs</button></div></div>
+      <div class="grp g-impl"><span class="lab">Implement <kbd>I</kbd></span><div class="row seg" id="impl"></div></div>
+      <div class="grp g-clothes"><span class="lab">Clothes <kbd>T B U</kbd></span><div class="row"><button id="cTop"></button><button id="cBot"></button><button id="cUnd"></button></div></div>
+    </div>
+    <div id="meter"><div id="track"><div id="fill"></div></div><div id="info"></div></div>
+  </div>
+</div>
+<div id="word" class="box"></div>
+<div id="summary" class="box"></div>
+<div id="fade"></div>
+<div id="dock"><div id="say" class="box"><div class="who" id="sayWho"></div><div class="txt" id="sayTxt"></div><div class="choices" id="choices"></div><div class="next" id="sayNext">▸</div></div></div>
+
+<script src="vendor/three.min.js"></script><script src="vendor/OrbitControls.js"></script><script src="vendor/postprocessing.js"></script><script src="vendor/GLTFLoader.js"></script>
+<script src="js/pain.js"></script><script src="js/audio.js"></script><script src="js/cast.js"></script><script src="js/lines.js"></script>
+<script src="js/figure.js"></script><script src="js/poses.js"></script><script src="js/stage.js"></script><script src="js/kit.js"></script><script src="js/livingroom.js"></script>
+<script src="js/talk.js"></script><script src="js/implements.js"></script><script src="js/session.js"></script>
+<script>
+'use strict';
+// Thorn — the correction test: Rose and Silas in the living room (js/livingroom.js), with Fenwick's figures page's character panel down the
+// left, and a whole correction run on it (js/session.js) as Fenwick's correction test runs one: she's placed, the player runs it (runs of
+// smacks on a toggle, pace, strength, side, where, soothing, her clothes), and it ends when they end it (Silas soothes her and dresses her) or
+// when she says her word; then the aftercare on the sofa, the conversation (js/lines.js, js/talk.js), and what came of it. Not the figures
+// page's loop, round after round: one correction, start to finish, and Begin again for another.
+//   ?outfit=jeans&clothes=down,up,up&sout=henley&pos=otk|otk:sofa|table|wall&def=&sub=&des=&com=&res=&expr=auto&resp=auto&terms=1&still=1
+const $ = id => document.getElementById(id), q = new URLSearchParams(location.search), V3 = THREE.Vector3;
+const ID = Cast.IDS[0], R = Cast.ROSTER[ID], KEY = 'thorn:correction:v1';
+const c01 = x => Math.max(0, Math.min(1, +x || 0));
+const stored = (() => { try { return JSON.parse(localStorage.getItem(KEY) || '{}'); } catch (e) { return {}; } })();
+const cfg = Object.assign({ outfit: Cast.outfits(ID)[0], clothes: ['down', 'up', 'up'], sOutfit: Cast.squireOutfits()[0], position: 'otk', expr: 'auto', resp: 0, respAuto: true, terms: false, sound: false },
+  stored, { rel: Object.assign({ defiance: R.meters.wilfulness, submission: 0, desire: 0, comfort: 0, resentment: 0 }, stored.rel) });
+const save = () => { try { localStorage.setItem(KEY, JSON.stringify(cfg)); } catch (e) { /* no storage: kept for this visit only */ } };
+// (the address can set anything, for a look at it)
+if (q.get('outfit')) cfg.outfit = q.get('outfit'); if (q.get('sout')) cfg.sOutfit = q.get('sout'); if (q.get('pos')) cfg.position = q.get('pos');
+if (q.get('clothes')) cfg.clothes = q.get('clothes').split(',');
+for (const [k, p] of [['defiance', 'def'], ['submission', 'sub'], ['desire', 'des'], ['comfort', 'com'], ['resentment', 'res']]) if (q.get(p) != null) cfg.rel[k] = c01(q.get(p));
+if (q.get('expr')) cfg.expr = q.get('expr'); if (q.get('resp')) { cfg.respAuto = q.get('resp') === 'auto'; if (!cfg.respAuto) cfg.resp = c01(q.get('resp')); }
+if (q.get('terms')) cfg.terms = q.get('terms') === '1';
+const OUTFITS = Cast.outfits(ID).concat(['none']), SOUTFITS = Cast.squireOutfits().concat(['none']), POS = LivingRoom.POSITIONS;
+if (!OUTFITS.includes(cfg.outfit)) cfg.outfit = OUTFITS[0]; if (!SOUTFITS.includes(cfg.sOutfit)) cfg.sOutfit = SOUTFITS[0]; if (!POS.some(p => p[0] === cfg.position)) cfg.position = 'otk';
+const specFor = () => Cast.figureSpec(ID, 'f', cfg.outfit);
+const relFor = () => Object.assign({}, cfg.rel);
+
+// ── The stage and the room ──
+const still = !!q.get('still');
+const stage = Stage.create($('view'), { keep: still });
+// (through black: a change made in the dark, then the scene back)
+stage.fade = fn => { if (still) return fn(); const f = $('fade'); f.style.transition = 'opacity 0.3s ease'; f.style.opacity = 1;
+  setTimeout(() => { fn(); f.style.transition = 'opacity 0.4s ease'; f.style.opacity = 0; setTimeout(() => { f.style.transition = ''; f.style.opacity = ''; }, 450); }, 320); };
+// (the grade warm, for the downlights and the lamps; the bloom softer than the stage's, the room being lit bright from above)
+if (stage.grade && stage.grade.uniforms) { stage.grade.uniforms.uShadow.value.set(0.95, 0.96, 1.0); stage.grade.uniforms.uHigh.value.set(1.06, 1.0, 0.9); stage.grade.uniforms.uExposure.value = 0.9; }
+if (stage.bloom) { stage.bloom.strength = 0.32; stage.bloom.threshold = 0.95; }
+const lr = LivingRoom.build(stage.scene), bay = lr.bay();
+bay.clear(cfg.position);
+
+// ── The correction ──
+let ses = null, beginning = 0, last = null;
+function endAll() { if (ses) { for (const P of ses.people) stage.scene.remove(P.f.root); stage.scene.remove(ses.captain.root); ses = null; window.ses = null; } }
+async function begin() {
+  const run = ++beginning; endAll(); last = null;
+  $('summary').style.display = 'none'; $('word').style.display = 'none'; sayHide(); sayQueue = Promise.resolve();
+  if (innerWidth < 860) $('panel').classList.add('closed');
+  bay.clear(cfg.position);
+  // (her terms first, if asked: the empty room, and the conversation in which she agrees and gives her word)
+  if (cfg.terms) {
+    stage.go(new V3(1.2, 1.55, 2.6), new V3(-0.6, 0.9, -1.2), 900); refresh();
+    await play(Lines.terms(ID), ID); if (run !== beginning) return; sayHide();
+  }
+  ses = Session.create(stage, bay, { captain: { outfit: cfg.sOutfit }, position: cfg.position, between: 'aside', queue: [{ id: ID, sex: 'f', outfit: cfg.outfit, spec: specFor() }],
+    witnesses: [], rel: { [ID]: relFor() }, sound: cfg.sound });
+  ses.on(onEvent); ses.start();
+  const [top, bottoms, under] = cfg.clothes; ses.current.f.setClothes({ top, bottoms, under });      // (as she starts: the panel's)
+  if (cfg.sound && window.GameAudio && GameAudio.ctx) GameAudio.startMusic({ theme: 'session' });
+  drawCams(); refresh(); window.ses = ses;
+}
+const models = Figure.preload();
+$('begin').onclick = () => { audioOn(); models.then(begin); };
+function audioOn() { if (cfg.sound && window.GameAudio && GameAudio.init()) { GameAudio.ambience({ air: 0.12, hum: 0.12, chatter: 0 }); GameAudio.startMusic({ theme: ses && ses.st.phase === 'after' ? 'after' : 'session' }); } }
+
+// ── Events: what's said goes to the dialogue box in turn; her word; the end (hers or the player's), then the aftercare ──
+let sayQueue = Promise.resolve();
+function fade() { if (still) return; const f = $('fade'); f.classList.add('on'); requestAnimationFrame(() => requestAnimationFrame(() => f.classList.remove('on'))); }
+function onEvent(type, d) {
+  if (type === 'turn') fade();
+  if (type === 'say') sayQueue = sayQueue.then(() => showLine(d.who, d.id, d.text, 900));
+  if (type === 'turnEnd') { cfg.rel.resentment = Math.min(1, cfg.rel.resentment + d.resentment); save(); relSliders(); }
+  if (type === 'word') { const w = $('word'); w.textContent = `${R.short} said her word: “${d.word}”. It stops.`; w.style.display = 'block'; setTimeout(() => (w.style.display = 'none'), 4200); }
+  if (type === 'done' && d.results.length) sayQueue = sayQueue.then(() => aftercare(d.results[0]));
+  if (type === 'aftercareNow') sayQueue = sayQueue.then(() => aftercare(d.result));
+  refresh();
+}
+// The aftercare: the two of them on the sofa, and the conversation; then what came of it.
+async function aftercare(r) {
+  const s = ses; if (!s) return;
+  fade(); s.aftercare(r.id); s.camera(0, 0); drawCams(); refresh();
+  if (cfg.sound && window.GameAudio && GameAudio.ctx) GameAudio.startMusic({ theme: 'after' });
+  await play(Lines.after(r.id, r.outcome, r.defiance && r.defiance.to > 0.45 ? 'unbroken' : null), r.id, s.people[0], r);
+  if (s !== ses) return;
+  s.cared(r.id);
+  cfg.rel.resentment = Math.round(cfg.rel.resentment * 50) / 100; save(); relSliders();      // (half of what she carries, cleared by it)
+  sayHide(); last = r; summary(r);
+}
+const pc = x => Math.round(x * 100) + '%';
+const POS_NAME = { otk: 'across his knee', wall: 'hands on the worktop', table: 'over the dining table' };
+function summary(r) {
+  const S = $('summary'), where = r.position === 'otk' && ses && ses.st.seat === 'sofa' ? 'across his knee on the sofa' : r.position === 'otk' ? 'across his knee on the dining chair' : POS_NAME[r.position] || r.position;
+  const said = (r.choice || []).filter(x => x !== r.order && !/what’s next/i.test(x));
+  S.innerHTML = `<h2>After</h2><table>
+    <tr><td>Where</td><td>${where}</td></tr>
+    <tr><td>Smacks</td><td>${r.hits}, with ${(r.implements && r.implements.length ? r.implements : ['hand']).map(k => k === 'hand' ? 'his hand' : 'the ' + Implements.SPEC[k].label.toLowerCase()).join(', ')}</td></tr>
+    <tr><td>How it ended</td><td>${r.outcome === 'word' ? `she said her word, “${R.word}”` : 'Silas ended it'}</td></tr>
+    <tr><td>At its hardest</td><td>${r.band}</td></tr>
+    <tr><td>Defiance</td><td>${pc(r.defiance.from)} → ${pc(r.defiance.to)}</td></tr>
+    <tr><td>Compliance</td><td>+${pc(r.compliance)}</td></tr>
+    <tr><td>Resentment</td><td>+${pc(r.resentment)} (she carries ${pc(cfg.rel.resentment)} now)</td></tr>
+    <tr><td>He said</td><td>${said.length ? said.join('; ') : '—'}</td></tr>
+    <tr><td>And then</td><td>${r.order || '—'}</td></tr></table>
+    <div class="row"><button class="on" id="again">Begin again</button><button id="close">Stay with them</button></div>`;
+  S.style.display = 'block'; $('again').onclick = () => { audioOn(); begin(); }; $('close').onclick = () => { S.style.display = 'none'; };
+}
+
+// ── The dialogue box: lines type out, babbled in the speaker's voice ──
+let sayTimer = null, advance = null;
+const nameOf = id => (id === 'captain' || id === 'silas' ? 'Silas' : Cast.ROSTER[id] ? Cast.ROSTER[id].short : id);
+const pitchOf = id => (id === 'captain' ? Cast.pitch('silas') : Cast.pitch(id));
+function sayHide() { clearInterval(sayTimer); advance = null; $('say').style.display = 'none'; $('choices').innerHTML = ''; }
+function showLine(who, id, text, hold) {
+  return new Promise(res => {
+    const box = $('say');
+    box.style.display = 'block'; $('sayWho').textContent = nameOf(id); $('sayWho').className = 'who' + (id === 'captain' ? ' cap' : ''); $('choices').innerHTML = ''; $('sayNext').style.display = 'none';
+    const el = $('sayTxt'); el.textContent = ''; let i = 0; clearInterval(sayTimer);
+    if (cfg.sound && window.GameAudio && GameAudio.ctx) GameAudio.speak(id, text, Math.min(3, text.length * 0.035), { pitch: pitchOf(id) });
+    const typed = () => {
+      clearInterval(sayTimer); el.textContent = text;
+      if (hold === 'click') { $('sayNext').style.display = 'block'; box.classList.add('wait'); advance = () => { advance = null; $('sayNext').style.display = 'none'; box.classList.remove('wait'); res(); }; }
+      else if (hold === 'choices') { advance = null; res(); }
+      else setTimeout(res, hold == null ? 1400 : hold);
+    };
+    if (hold === 'click') advance = typed;
+    if (still) return typed();
+    sayTimer = setInterval(() => { el.textContent = text.slice(0, ++i); if (i >= text.length) typed(); }, 24);
+  });
+}
+function choose(options) {
+  return new Promise(res => { const el = $('choices'); el.innerHTML = ''; options.forEach((o, i) => { const b = document.createElement('button'); b.textContent = `${i + 1}. ${o.label}`; b.onclick = () => { el.innerHTML = ''; window.__choose = null; res(o); }; el.append(b); }); window.__choose = options.map((o, i) => () => el.children[i] && el.children[i].click()); });
+}
+// (a conversation played through js/talk.js: the terms, the aftercare; faces set as the lines ask)
+const play = (steps, id, P, r) => Talk.play(steps, {
+  line: (s, hold) => { const who = s.who === 'captain' ? 'captain' : id; if (s.expr && ses) { if (s.who === 'captain') ses.captain.setExpr(s.expr); else if (P) P.f.setExpr(s.expr); } return showLine(s.who, who, s.text, hold); },
+  choose: options => choose(options),
+  took: o => { if (!r) return; r.choice = r.choice || []; r.choice.push(o.label); if (o.order) r.order = o.label; },
+});
+
+// ── The panel ──
+const seg = (id, items, cur, fn) => { const el = $(id); el.innerHTML = ''; for (const [v, label, title] of items) { const b = document.createElement('button'); b.textContent = label; if (title) b.title = title; b.className = v === cur ? 'on' : ''; b.onclick = () => fn(v); el.append(b); } };
+$('her').innerHTML = `<b>${R.name}</b>, ${R.age}<small>${R.role}</small><small>${R.about.temperament.split('. ')[0]}.</small><small>Her word: <b style="font-size:12px">${R.word}</b></small>`;
+function relSliders() {
+  const el = $('rel'); el.innerHTML = '';
+  for (const [k, nm] of [['defiance', 'Defiance'], ['submission', 'Submission'], ['desire', 'Desire'], ['comfort', 'Comfort'], ['resentment', 'Resentment']]) {
+    const l = document.createElement('label'); l.textContent = nm; const r = document.createElement('input'); r.type = 'range'; r.min = 0; r.max = 100; r.step = 1; r.value = Math.round(cfg.rel[k] * 100);
+    const o = document.createElement('span'); o.textContent = r.value + '%';
+    r.oninput = () => { cfg.rel[k] = r.value / 100; o.textContent = r.value + '%'; save(); if (ses) ses.setRel(ID, relFor()); };
+    el.append(l, r, o);
+  }
+}
+relSliders();
+{ const o = document.createElement('option'); o.value = 'auto'; o.textContent = 'auto (the correction’s)'; $('expr').append(o); }
+for (const e of Object.keys(Figure.EXPRS)) { const o = document.createElement('option'); o.value = e; o.textContent = e; $('expr').append(o); }
+$('expr').onchange = () => { cfg.expr = $('expr').value; save(); };
+$('resp').value = Math.round(cfg.resp * 100); $('respV').textContent = $('resp').value + '%';
+$('resp').oninput = () => { cfg.resp = $('resp').value / 100; cfg.respAuto = false; $('respV').textContent = $('resp').value + '%'; save(); refresh(); };
+$('respAuto').onclick = () => { cfg.respAuto = !cfg.respAuto; save(); refresh(); };
+$('terms').onclick = () => { cfg.terms = !cfg.terms; save(); refresh(); };
+$('sound').onclick = () => { cfg.sound = !cfg.sound; save(); if (ses) ses.st.sound = cfg.sound; if (cfg.sound) audioOn(); else if (window.GameAudio && GameAudio.ctx) { GameAudio.stopMusic(0.6); GameAudio.ambience({ air: 0, hum: 0 }); } refresh(); };
+$('hide').onclick = () => $('panel').classList.toggle('closed');
+// (her clothes: in a correction, Silas changes them, seen; before it begins or after it's over, how she'll start the next)
+const KEYS = ['top', 'bottoms', 'under'], FLIP = [['down', 'up'], ['up', 'down'], ['up', 'down']];
+const live = () => ses && ses.current && ses.st.phase === 'turn' && !ses.st.ending;
+function flip(i) {
+  const [a, b] = FLIP[i], k = KEYS[i];
+  if (live()) { const s = ses.current.f.state; ses.dress({ [k]: s[k] === a ? b : a }); refresh(); return; }
+  cfg.clothes[i] = cfg.clothes[i] === a ? b : a; save(); refresh();
+}
+for (const [i, ids] of [[0, ['pTop', 'cTop']], [1, ['pBot', 'cBot']], [2, ['pUnd', 'cUnd']]]) for (const id of ids) $(id).onclick = () => flip(i);
+// what the layers are called, for what she's wearing, and the state they're in
+const TOP_NAME = { tee: 'T-shirt', cardigan: 'Cardigan', thermal: 'Top', henley: 'Henley', open: 'Shirt', plaid: 'Shirt', waistcoat: 'Waistcoat', sweatervest: 'Jumper' };
+const LEG_NAME = { jeans: 'Jeans', joggers: 'Joggers', chinos: 'Chinos', work: 'Trousers', combat: 'Trousers', pressed: 'Trousers', canvas: 'Trousers' };
+function clothesLabels() {
+  if (cfg.outfit === 'none') return ['Nothing on', 'Nothing on', 'Nothing on', true];
+  const O = Cast.WARDROBE[ID][cfg.outfit], s = live() || (ses && ses.current && ses.st.phase === 'closing') ? ses.current.f.state : { top: cfg.clothes[0], bottoms: cfg.clothes[1], under: cfg.clothes[2] };
+  return [`${TOP_NAME[O.top] || 'Top'}: ${s.top === 'up' ? 'raised' : 'down'}`, `${LEG_NAME[O.legs] || 'Trousers'}: ${s.bottoms === 'down' ? 'lowered' : 'up'}`, `Knickers: ${s.under === 'down' ? 'lowered' : 'up'}`, false];
+}
+const NOTES = { otk: 'The dining chair, pulled out into the room. She lies across his lap, her hands to the floor.', 'otk:sofa': 'Perched on the front of the sofa. She lies along it, her near arm up on the seat. The coffee table’s pushed back for it.',
+  table: 'At the end of the dining table, bent over it, holding its sides; Silas at her left. The paddle and the belt are for here.', wall: 'At the kitchen’s worktop, palms flat on it, bent forward; Silas at her left.' };
+function setPosition(v) {
+  cfg.position = v; save();
+  if (live()) { fade(); bay.clear(v); ses.position(v); drawCams(); } else if (!ses || ses.st.phase !== 'after') bay.clear(v);
+  refresh();
+}
+
+// ── The HUD: who and where it's got to (the five phases of a correction: defiance, covering, pride, breaking, receptive), the controls ──
+function phaseOf() {
+  if (!ses || !ses.current) return '';
+  const st = ses.st, P = ses.current, X = P.rx;
+  if (st.phase === 'after') return 'Aftercare';
+  if (P.done) return P.outcome === 'word' ? 'Stopped: her word' : 'Over';
+  if (st.word) return 'Stopped: her word';
+  if (st.ending) return 'Ending: he soothes her, then dresses her';
+  if (st.act || st.actQ.length) return 'Silas is changing her clothes';
+  if (!P.hits) return 'Placed';
+  if (ses.covering) return 'Covering: her hand back over her seat';
+  if (X.broke > 0) return 'Breaking';
+  if (P.def0 > 0.05 && P.def >= 0.2) return X.pride > 0.35 ? 'Pride: holding it in' : 'Defiance';
+  if (X.fight < 0.3) return 'Spent: time to wind down';
+  if (P.pain.distress() >= 0.6) return 'Receptive';
+  return 'Settling';
+}
+const P0 = { pace: [0.5, 2], strength: [0.5, 1.5] }, STEP = 0.25, times = v => (Number.isInteger(v) ? v.toFixed(0) : String(v)) + '×';
+document.querySelectorAll('[data-k]').forEach(b => b.onclick = () => bump(b.dataset.k, +b.dataset.d));
+function bump(k, d) { if (!ses) return; ses.set({ [k]: Math.round(Math.min(P0[k][1], Math.max(P0[k][0], ses.st[k] + d)) / STEP) * STEP }); refresh(); }
+const segH = (id, val, fn) => { const el = $(id); el.querySelectorAll('button').forEach(b => { b.classList.toggle('on', b.dataset.v === val); b.onclick = () => { el.querySelectorAll('button').forEach(x => x.classList.toggle('on', x === b)); fn(b.dataset.v); }; }); };
+segH('side', 'alt', v => ses && ses.set({ side: v })); segH('area', 'sitspot', v => ses && ses.set({ area: v }));
+$('run').onclick = () => { audioOn(); ses && ses.run(); refresh(); };
+$('soothe').onclick = () => { ses && ses.set({ soothe: !ses.st.soothe }); refresh(); };
+$('end').onclick = () => { if (ses && !ses.st.word) ses.endTurn(); refresh(); };      // (not once she's said her word: that ends it its own way)
+// (what he strikes with: the hand or the hairbrush anywhere; the paddle and the belt over the table only)
+function drawImpl() {
+  const el = $('impl'), ok = ses ? ses.implements() : ['hand'], cur = ses ? ses.st.implement : 'hand', open = ses && ses.st.phase === 'turn' && !ses.st.ending && !ses.st.word;
+  if (!el.children.length) for (const k of Implements.KINDS) { const b = document.createElement('button'); b.dataset.v = k; b.textContent = Implements.SPEC[k].label; b.onclick = () => { if (ses) { audioOn(); ses.implement(k); refresh(); } }; el.append(b); }
+  for (const b of el.children) { const k = b.dataset.v; b.classList.toggle('on', k === cur); b.classList.toggle('na', !ok.includes(k)); b.disabled = !open || !ok.includes(k);
+    b.title = ok.includes(k) ? '' : 'Over the dining table only'; }
+}
+const cycImpl = () => { if (!ses) return; const ok = ses.implements(), i = ok.indexOf(ses.st.implement); ses.implement(ok[(i + 1) % ok.length]); };
+const cyc = (k, list) => { const i = list.indexOf(ses.st[k]); const v = list[(i + 1) % list.length]; ses.set({ [k]: v }); $(k === 'side' ? 'side' : 'area').querySelectorAll('button').forEach(b => b.classList.toggle('on', b.dataset.v === v)); };
+function drawCams() {
+  const el = $('cams'); el.innerHTML = ''; if (!ses) return;
+  (ses.CAMS[ses.st.phase === 'after' ? 'after' : ses.st.position] || []).forEach(([nm], i) => { const b = document.createElement('button'); b.textContent = nm.replace(/^Captain$/, 'Silas').replace(/^Their face$/, 'Her face'); b.className = 'box' + (ses.st.cam === i ? ' on' : ''); b.onclick = () => { ses.camera(i); drawCams(); }; el.append(b); });
+}
+function refresh() {
+  seg('outfit', OUTFITS.map(o => [o, o === 'none' ? 'None' : o, o === 'none' ? 'Nothing on, to see how the body moves' : Cast.OUTFIT_NOTES[o]]), cfg.outfit, v => { cfg.outfit = v; save(); audioOn(); models.then(begin); });
+  seg('sout', SOUTFITS.map(o => [o, o === 'none' ? 'None' : o, o === 'none' ? 'Nothing on' : Cast.OUTFIT_NOTES[o]]), cfg.sOutfit, v => { cfg.sOutfit = v; save(); audioOn(); models.then(begin); });
+  seg('pos', POS.map(([v, nm]) => [v, nm]), cfg.position, setPosition);
+  $('posNote').textContent = NOTES[cfg.position] || '';
+  $('expr').value = cfg.expr; $('respAuto').classList.toggle('on', cfg.respAuto); $('terms').classList.toggle('on', cfg.terms);
+  $('sound').textContent = cfg.sound ? 'Sound on' : 'Sound off'; $('sound').classList.toggle('on', cfg.sound);
+  const [t, b, u, bare] = clothesLabels();
+  $('pTop').textContent = $('cTop').textContent = t; $('pBot').textContent = $('cBot').textContent = b; $('pUnd').textContent = $('cUnd').textContent = u;
+  for (const id of ['pTop', 'pBot', 'pUnd']) $(id).disabled = bare || (ses && ses.st.ending);
+  $('whoNm').textContent = `${R.name} · ${POS.find(p => p[0] === cfg.position)[1].toLowerCase()}`;
+  if (!ses) { $('whoSub').textContent = 'Loading…'; $('whoPhase').textContent = ''; return; }
+  const st = ses.st, c = ses.current;
+  $('whoSub').textContent = `Her word: ${R.word}${st.phase === 'after' ? ' · on the sofa, after' : ''}`; $('whoPhase').textContent = phaseOf();
+  $('run').textContent = st.running ? 'Stop run' : 'Start run'; $('run').classList.toggle('on', st.running); $('run').disabled = !c || st.phase !== 'turn' || ses.busy || st.word;
+  for (const id of ['cTop', 'cBot', 'cUnd', 'soothe', 'end']) $(id).disabled = !c || st.phase !== 'turn' || !!st.ending || st.word || (id === 'soothe' && ses.busy);
+  if (bare) $('cTop').disabled = $('cBot').disabled = $('cUnd').disabled = true;
+  $('soothe').classList.toggle('on', st.soothe); $('paceV').textContent = times(st.pace); $('strengthV').textContent = times(st.strength);
+  drawImpl();
+}
+// the meter: her distress against the bar (the bands' ticks, where she cries and where she stills, and in red where she'd say her word)
+{ const tr = $('track'), max = 2.2; for (const v of [0.3, 0.6, 0.9, 1.0, Pain.PAIN.CRYING, Pain.PAIN.STILL]) { const t = document.createElement('div'); t.className = 'tick'; t.style.left = (v / max * 100) + '%'; tr.append(t); }
+  const h = document.createElement('div'); h.className = 'tick harsh'; h.style.left = (Pain.PAIN.TOO_HARSH / max * 100) + '%'; tr.append(h);
+  window.__meter = () => {
+    if (!ses) { $('fill').style.width = '0%'; $('info').textContent = ''; return; }
+    const c = ses.current, d = c ? c.pain.distress() : 0; $('fill').style.width = Math.min(100, d / max * 100) + '%';
+    $('info').innerHTML = c ? `<b>${d.toFixed(2)}</b> · ${ses.band()} · <b>${c.hits}</b> smacks${ses.st.running ? ' · running' : ''}${ses.st.soothe ? ' · soothing' : ''}${c.def0 > 0.05 ? ` · defiance <b>${Math.round(ses.defiance() * 100)}%</b>` : ''}` : '';
+  }; }
+
+// ── Keys ──
+let downAt = null;
+addEventListener('pointerdown', e => { downAt = [e.clientX, e.clientY]; }, true);
+addEventListener('click', e => {
+  if (!advance || e.target.closest('button, input, select, a, #panel, #summary, #hud')) return;
+  if (downAt && Math.hypot(e.clientX - downAt[0], e.clientY - downAt[1]) > 6) return;
+  advance();
+});
+addEventListener('keydown', e => {
+  if (advance && (e.key === ' ' || e.key === 'Enter')) { e.preventDefault(); advance(); return; }
+  if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') return;
+  if (/^[1-9]$/.test(e.key) && window.__choose && window.__choose[+e.key - 1]) { window.__choose[+e.key - 1](); return; }
+  if (e.key === 'Escape') { $('panel').classList.toggle('closed'); return; }
+  if (!ses) return; const k = e.key;
+  if (k === ' ') { e.preventDefault(); audioOn(); ses.run(); }
+  else if (k === '[') bump('pace', -STEP); else if (k === ']') bump('pace', STEP); else if (k === '-') bump('strength', -STEP); else if (k === '=' || k === '+') bump('strength', STEP);
+  else if (k === 'd' || k === 'D') cyc('side', ['alt', 'L', 'R']); else if (k === 'a' || k === 'A') cyc('area', ses.AREAS);
+  else if (k === 's' || k === 'S') ses.set({ soothe: !ses.st.soothe });
+  else if (k === 't' || k === 'T') $('cTop').click(); else if (k === 'b' || k === 'B') $('cBot').click(); else if (k === 'u' || k === 'U') $('cUnd').click();
+  else if (k === 'i' || k === 'I') cycImpl();
+  else if (k === 'Enter') { if (!ses.st.word) ses.endTurn(); } else if (k === 'c' || k === 'C') { ses.camera(ses.st.cam + 1); drawCams(); }
+  refresh();
+});
+
+// ── Run ──
+let hudT = 0;
+const each = dt => {
+  if (ses) {
+    if (!cfg.respAuto) for (const P of ses.people) P.resp = cfg.resp;
+    ses.update(dt);
+    if (cfg.expr !== 'auto' && ses.current) ses.current.f.setExpr(cfg.expr);
+  }
+  lr.tick(dt); window.__meter();
+  if ((hudT += dt) > 0.2) { hudT = 0; refresh(); }
+};
+refresh();
+// (the picture centred in what the panel and the HUD leave of the view: between them on a wide screen, below the HUD on a small one)
+const small = matchMedia('(max-width: 860px), (max-height: 560px)');
+const insets = () => {
+  const h = $('hud').getBoundingClientRect(), p = $('panel'), open = !p.classList.contains('closed'), pr = p.getBoundingClientRect();
+  stage.setInsets(small.matches ? { top: Math.max(0, h.bottom - 40) } : { left: open ? pr.right : 0, right: Math.max(0, innerWidth - h.left) });
+};
+if (window.ResizeObserver) { const ro = new ResizeObserver(insets); ro.observe($('hud')); ro.observe($('panel')); }
+addEventListener('resize', insets); new MutationObserver(insets).observe($('panel'), { attributes: true, attributeFilter: ['class'] }); insets();
+models.then(() => {
+  if (!cfg.terms) begin(); else { stage.go(new V3(1.2, 1.55, 2.6), new V3(-0.6, 0.9, -1.2)); refresh(); }
+  // (?still=1: nothing moves till it's stepped: window.step(n) n frames drawn, window.sim(n) n frames of the correction without drawing them)
+  if (still) { stage.controls.enableDamping = false; window.step = (n, dt) => { for (let i = 0; i < n; i++) stage.step((dt || 0.05) * 1000, each); }; window.sim = (n, dt) => { for (let i = 0; i < n; i++) each(dt || 0.05); };
+    window.step(4); window.ready = true; }
+  else { stage.start(each); window.ready = true; }
+});
+</script></body></html>
