@@ -14,7 +14,7 @@ select { width: 100%; padding: 6px 8px; } button:hover { border-color: #a89e90; 
 a { color: var(--dim); } small.note { display: block; color: var(--dim); font-size: 11px; margin-top: 5px; line-height: 1.4; }
 kbd { font: 10px ui-monospace, monospace; color: var(--dim); }
 
-/* The character panel, as Fenwick's figures page has it: who she is, her outfit, her clothes, Silas's, where they are, where she is with him,
+/* The character panel, as Fenwick's figures page has it: who she is, her outfit, her clothes, James's, where they are, where she is with him,
    her expression and her body's response. Down the left. */
 #panel { position: fixed; top: calc(12px + env(safe-area-inset-top)); left: calc(12px + env(safe-area-inset-left)); width: 300px; max-height: calc(100% - 24px); overflow: auto; padding: 12px 14px; z-index: 4; }
 #hide { position: fixed; top: calc(12px + env(safe-area-inset-top)); left: calc(324px + env(safe-area-inset-left)); z-index: 5; } #panel.closed { display: none; }
@@ -67,12 +67,12 @@ kbd { font: 10px ui-monospace, monospace; color: var(--dim); }
 
 <div id="panel" class="box">
   <h1>Correction test</h1>
-  <p class="sub">The living room, at night. You’re Silas. One whole correction: placed, run as you judge it, ended, then the aftercare. If it goes too far she says her word, and it stops at once.</p>
+  <p class="sub">The living room, at night. You’re James. One whole correction: placed, run as you judge it, ended, then the aftercare. If it goes too far she says her word, and it stops at once.</p>
   <h2>Her</h2><div id="her"></div>
   <h2>Outfit</h2><div class="row" id="outfit"></div>
   <h2>Clothes</h2><div class="row"><button id="pTop"></button><button id="pBot"></button><button id="pUnd"></button></div>
-  <small class="note">Before it begins, how she starts; in it, Silas changes them, seen.</small>
-  <h2>Silas</h2><div class="row" id="sout"></div>
+  <small class="note">Before it begins, how she starts; in it, James changes them, seen.</small>
+  <h2>James</h2><div class="row" id="sout"></div>
   <h2>Position</h2><div class="row" id="pos"></div>
   <small class="note" id="posNote"></small>
   <h2>Where she is with him</h2><div class="rel" id="rel"></div>
@@ -82,7 +82,7 @@ kbd { font: 10px ui-monospace, monospace; color: var(--dim); }
   <h2>Before it, and sound</h2><div class="row"><button id="terms">Her terms first</button><button id="sound">Sound off</button></div>
   <small class="note">Her terms: the conversation, before he ever corrects her, where he sets out how it works and she agrees, and gives her word.</small>
   <div class="row" style="margin-top:12px"><button id="begin" class="on">Begin again</button></div>
-  <small class="note">An outfit, or Silas’s, begins it again. Drag to look round, scroll or pinch to come closer.</small>
+  <small class="note">An outfit, or James’s, begins it again. Drag to look round, scroll or pinch to come closer.</small>
 </div>
 <button id="hide" class="box">☰</button>
 
@@ -115,9 +115,9 @@ kbd { font: 10px ui-monospace, monospace; color: var(--dim); }
 <script src="js/talk.js"></script><script src="js/implements.js"></script><script src="js/session.js"></script>
 <script>
 'use strict';
-// Thorn — the correction test: Rose and Silas in the living room (js/livingroom.js), with Fenwick's figures page's character panel down the
+// Thorn — the correction test: Rose and James in the living room (js/livingroom.js), with Fenwick's figures page's character panel down the
 // left, and a whole correction run on it (js/session.js) as Fenwick's correction test runs one: she's placed, the player runs it (runs of
-// smacks on a toggle, pace, strength, side, where, soothing, her clothes), and it ends when they end it (Silas soothes her and dresses her) or
+// smacks on a toggle, pace, strength, side, where, soothing, her clothes), and it ends when they end it (James soothes her and dresses her) or
 // when she says her word; then the aftercare on the sofa, the conversation (js/lines.js, js/talk.js), and what came of it. Not the figures
 // page's loop, round after round: one correction, start to finish, and Begin again for another.
 //   ?outfit=jeans&clothes=down,up,up&sout=henley&pos=otk|otk:sofa|table|wall&def=&sub=&des=&com=&res=&expr=auto&resp=auto&terms=1&still=1
@@ -206,7 +206,7 @@ function summary(r) {
   S.innerHTML = `<h2>After</h2><table>
     <tr><td>Where</td><td>${where}</td></tr>
     <tr><td>Smacks</td><td>${r.hits}, with ${(r.implements && r.implements.length ? r.implements : ['hand']).map(k => k === 'hand' ? 'his hand' : 'the ' + Implements.SPEC[k].label.toLowerCase()).join(', ')}</td></tr>
-    <tr><td>How it ended</td><td>${r.outcome === 'word' ? `she said her word, “${R.word}”` : 'Silas ended it'}</td></tr>
+    <tr><td>How it ended</td><td>${r.outcome === 'word' ? `she said her word, “${R.word}”` : 'James ended it'}</td></tr>
     <tr><td>At its hardest</td><td>${r.band}</td></tr>
     <tr><td>Defiance</td><td>${pc(r.defiance.from)} → ${pc(r.defiance.to)}</td></tr>
     <tr><td>Compliance</td><td>+${pc(r.compliance)}</td></tr>
@@ -219,8 +219,8 @@ function summary(r) {
 
 // ── The dialogue box: lines type out, babbled in the speaker's voice ──
 let sayTimer = null, advance = null;
-const nameOf = id => (id === 'captain' || id === 'silas' ? 'Silas' : Cast.ROSTER[id] ? Cast.ROSTER[id].short : id);
-const pitchOf = id => (id === 'captain' ? Cast.pitch('silas') : Cast.pitch(id));
+const nameOf = id => (id === 'captain' || id === 'james' ? 'James' : Cast.ROSTER[id] ? Cast.ROSTER[id].short : id);
+const pitchOf = id => (id === 'captain' ? Cast.pitch('james') : Cast.pitch(id));
 function sayHide() { clearInterval(sayTimer); advance = null; $('say').style.display = 'none'; $('choices').innerHTML = ''; }
 function showLine(who, id, text, hold) {
   return new Promise(res => {
@@ -271,7 +271,7 @@ $('respAuto').onclick = () => { cfg.respAuto = !cfg.respAuto; save(); refresh();
 $('terms').onclick = () => { cfg.terms = !cfg.terms; save(); refresh(); };
 $('sound').onclick = () => { cfg.sound = !cfg.sound; save(); if (ses) ses.st.sound = cfg.sound; if (cfg.sound) audioOn(); else if (window.GameAudio && GameAudio.ctx) { GameAudio.stopMusic(0.6); GameAudio.ambience({ air: 0, hum: 0 }); } refresh(); };
 $('hide').onclick = () => $('panel').classList.toggle('closed');
-// (her clothes: in a correction, Silas changes them, seen; before it begins or after it's over, how she'll start the next)
+// (her clothes: in a correction, James changes them, seen; before it begins or after it's over, how she'll start the next)
 const KEYS = ['top', 'bottoms', 'under'], FLIP = [['down', 'up'], ['up', 'down'], ['up', 'down']];
 const live = () => ses && ses.current && ses.st.phase === 'turn' && !ses.st.ending;
 function flip(i) {
@@ -289,7 +289,7 @@ function clothesLabels() {
   return [`${TOP_NAME[O.top] || 'Top'}: ${s.top === 'up' ? 'raised' : 'down'}`, `${LEG_NAME[O.legs] || 'Trousers'}: ${s.bottoms === 'down' ? 'lowered' : 'up'}`, `Knickers: ${s.under === 'down' ? 'lowered' : 'up'}`, false];
 }
 const NOTES = { otk: 'The dining chair, pulled out into the room. She lies across his lap, her hands to the floor.', 'otk:sofa': 'Perched on the front of the sofa. She lies along it, her near arm up on the seat. The coffee table’s pushed back for it.',
-  table: 'At the end of the dining table, bent over it, holding its sides; Silas at her left. The paddle and the belt are for here.', wall: 'At the kitchen’s worktop, palms flat on it, bent forward; Silas at her left.' };
+  table: 'At the end of the dining table, bent over it, holding its sides; James at her left. The paddle and the belt are for here.', wall: 'At the kitchen’s worktop, palms flat on it, bent forward; James at her left.' };
 function setPosition(v) {
   cfg.position = v; save();
   if (live()) { fade(); bay.clear(v); ses.position(v); drawCams(); } else if (!ses || ses.st.phase !== 'after') bay.clear(v);
@@ -304,7 +304,7 @@ function phaseOf() {
   if (P.done) return P.outcome === 'word' ? 'Stopped: her word' : 'Over';
   if (st.word) return 'Stopped: her word';
   if (st.ending) return 'Ending: he soothes her, then dresses her';
-  if (st.act || st.actQ.length) return 'Silas is changing her clothes';
+  if (st.act || st.actQ.length) return 'James is changing her clothes';
   if (!P.hits) return 'Placed';
   if (ses.covering) return 'Covering: her hand back over her seat';
   if (X.broke > 0) return 'Breaking';
@@ -332,7 +332,7 @@ const cycImpl = () => { if (!ses) return; const ok = ses.implements(), i = ok.in
 const cyc = (k, list) => { const i = list.indexOf(ses.st[k]); const v = list[(i + 1) % list.length]; ses.set({ [k]: v }); $(k === 'side' ? 'side' : 'area').querySelectorAll('button').forEach(b => b.classList.toggle('on', b.dataset.v === v)); };
 function drawCams() {
   const el = $('cams'); el.innerHTML = ''; if (!ses) return;
-  (ses.CAMS[ses.st.phase === 'after' ? 'after' : ses.st.position] || []).forEach(([nm], i) => { const b = document.createElement('button'); b.textContent = nm.replace(/^Captain$/, 'Silas').replace(/^Their face$/, 'Her face'); b.className = 'box' + (ses.st.cam === i ? ' on' : ''); b.onclick = () => { ses.camera(i); drawCams(); }; el.append(b); });
+  (ses.CAMS[ses.st.phase === 'after' ? 'after' : ses.st.position] || []).forEach(([nm], i) => { const b = document.createElement('button'); b.textContent = nm.replace(/^Captain$/, 'James').replace(/^Their face$/, 'Her face'); b.className = 'box' + (ses.st.cam === i ? ' on' : ''); b.onclick = () => { ses.camera(i); drawCams(); }; el.append(b); });
 }
 function refresh() {
   seg('outfit', OUTFITS.map(o => [o, o === 'none' ? 'None' : o, o === 'none' ? 'Nothing on, to see how the body moves' : Cast.OUTFIT_NOTES[o]]), cfg.outfit, v => { cfg.outfit = v; save(); audioOn(); models.then(begin); });

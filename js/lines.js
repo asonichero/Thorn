@@ -1,11 +1,11 @@
-// Thorn — what's said in a correction (the structure is Fenwick Hall's js/lines.js, and Project Meridian's before it; Rose's and Silas's lines
+// Thorn — what's said in a correction (the structure is Fenwick Hall's js/lines.js, and Project Meridian's before it; Rose's and James's lines
 // brought into the present day). Her scripted responses as it goes (as she's placed, the first smack, as her distress crosses each band, when
-// soothed, her safe word when it's gone too far, at the end), Silas's word to place her and to correct her position, the conversation after
+// soothed, her safe word when it's gone too far, at the end), James's word to place her and to correct her position, the conversation after
 // (aftercare given through what's said, then what she's to do with the rest of the evening), and the terms: the conversation, before any
-// correction, where Silas sets out how it works between them and she agrees to it and chooses her word.
-// {word}: her safe word. {name}: what Silas calls her (Cast: short).
+// correction, where James sets out how it works between them and she agrees to it and chooses her word.
+// {word}: her safe word. {name}: what James calls her (Cast: short).
 //
-//   Lines.react(id, key) → a line or null · Lines.captain(key, id) (Silas; `captain` is the engine's name) · Lines.place(id, position)
+//   Lines.react(id, key) → a line or null · Lines.captain(key, id) (James; `captain` is the engine's name) · Lines.place(id, position)
 //   Lines.after(id, outcome, mood) → the aftercare conversation as steps · Lines.terms(id) → the terms conversation as steps
 (function (root) {
 'use strict';
@@ -18,7 +18,7 @@ const pick = a => {
   P.last = P.left.pop(); return a[P.last];
 };
 
-// Silas placing her, by position. Standing, by what she holds (a room's support names its lines): worktop, the kitchen's; edge, any edge;
+// James placing her, by position. Standing, by what she holds (a room's support names its lines): worktop, the kitchen's; edge, any edge;
 // flat, a bare wall; table, chest down over a table.
 const PLACE = {
   otk: ['Across my knee, {name}.', 'Here. Over my lap.', 'Come here. Across my knee.'],
@@ -27,7 +27,7 @@ const PLACE = {
   flat: ['Hands on the wall, {name}. Step back.', 'Palms flat on the wall. Feet apart.', 'Face the wall. Hands on it, and leave them there.'],
   table: ['Over the table, {name}.', 'Bend over the table. Hold the sides.', 'Here. Chest down on the table.'],
 };
-// Silas, when she gets in the way of it: a hand back over her seat (hands); the second time, he takes the wrist and holds it at the small of
+// James, when she gets in the way of it: a hand back over her seat (hands); the second time, he takes the wrist and holds it at the small of
 // her back (pin); and when she comes up out of position (down: across the knee; then by what she holds).
 const CAPTAIN = {
   hands: ['Hand down, {name}.', 'Move the hand.', 'That hand goes back where it was.'],
@@ -48,7 +48,7 @@ const CAPTAIN = {
 // During: start (as she's placed), first (the first smack), flinching, struggling, edge, past (each the first time it's reached), plead (now
 // and then while it's hard), spent (now and then, once the fight's gone out of her: hardly words), accept (in place of a plea, the more
 // submissive she is), flushed (once, if her body's response shows: embarrassment), soothe (the palm on her, between), word (her safe word,
-// called), end (when Silas stops). While she's still defiant: defy (back-talk, in place of the early band lines and the pleas), and yield
+// called), end (when James stops). While she's still defiant: defy (back-talk, in place of the early band lines and the pleas), and yield
 // (once, as the defiance breaks). (Thorn) hairbrush, paddle, belt: as he takes it up.
 const REACT = {
   rose: {
@@ -58,7 +58,7 @@ const REACT = {
     struggling: ['I wasn’t thinking— I had my music on and I just—', 'Ah! I know, I know— it was dark—'],
     edge: ['I’m sorry— I’ll look, I’ll listen, I promise—', 'Please— I’ll remember this time—'],
     past: ['I’m sorry— I’m sorry I scared you—'],
-    plead: ['Silas—', 'Please—'],
+    plead: ['James—', 'Please—'],
     spent: ['…', 'Mm…', '…'],
     accept: ['Yes. I know. You’re right.', 'I know why. I do.'],
     flushed: ['Don’t— oh, don’t look at my face.', 'I’m as red as my coat. Don’t say it.'],
@@ -69,13 +69,13 @@ const REACT = {
     end: ['…I’ll take the road. I mean it this time.', '…You’ll still drive me to Nan’s?'],
     // (as he takes up an implement)
     hairbrush: ['Not the hairbrush—', 'Oh— not the brush—', 'That’s my hairbrush!'],
-    paddle: ['Silas— that’s enormous—', 'Oh, no. Not that one.'],
-    belt: ['The belt? Silas—', 'Oh— not the belt—'],
+    paddle: ['James— that’s enormous—', 'Oh, no. Not that one.'],
+    belt: ['The belt? James—', 'Oh— not the belt—'],
   },
 };
 
 // Aftercare: the conversation once it's over. Her opening line (by outcome: done, or word if she called it; or, if it ended with her defiance
-// still standing, unbroken: short, guarded), three ways Silas can answer (reassure her; say why it mattered, in his own words; ask how she
+// still standing, unbroken: short, guarded), three ways James can answer (reassure her; say why it mattered, in his own words; ask how she
 // is), each with her reply; then what she's to do with the rest of the evening, with her answer; and a last word.
 const APPROACH = [
   { id: 'reassure', label: 'Reassure her', captain: ['It’s done. It stays done. You’re all right, and so are we.', 'Come here. It’s over, and nobody’s going anywhere.'] },
@@ -95,10 +95,10 @@ const AFTER = {
     reply: { reassure: '…Thank you. I needed to hear you say it.', explain: 'I know. It’s just— walking’s the only time nobody wants anything from me.', ask: 'Shaky. Warm. Like after a long walk home.' },
     order: { rest: 'Mum’ll want to know why I’m in bed at eight. …I’ll tell her I was tired. It’s true.', supper: 'Only if I bring the bread. It’s better than anything you’ve got in.',
       sofa: 'I’d like that. Will you tell me about the old oak again?', work: 'Nan’s. By the road. The whole way. And I’ll text.' },
-    close: '…Thank you, Silas.',
+    close: '…Thank you, James.',
   },
 };
-// The terms (the first time, before he ever corrects her): Silas sets out what he expects and what he'll do; she agrees, and she chooses her
+// The terms (the first time, before he ever corrects her): James sets out what he expects and what he'll do; she agrees, and she chooses her
 // word, which stops anything at once. Steps for js/talk.js: lines, then her answer.
 const TERMS = {
   rose: [
@@ -113,8 +113,8 @@ const AGREE = {
 };
 const WORD_ASK = 'And a word. If it’s ever more than you can bear, you say it, and it stops at once. Whatever it is, wherever we are.';
 
-const WHO = { silas: { short: 'Silas', word: '' }, captain: { short: 'Silas', word: '' } };
-const fill = (t, id) => { const C = root.Cast, r = (C && C.ROSTER[id]) || WHO[id] || WHO.silas; return t.replace(/\{word\}/g, r.word).replace(/\{name\}/g, r.short); };
+const WHO = { james: { short: 'James', word: '' }, captain: { short: 'James', word: '' } };
+const fill = (t, id) => { const C = root.Cast, r = (C && C.ROSTER[id]) || WHO[id] || WHO.james; return t.replace(/\{word\}/g, r.word).replace(/\{name\}/g, r.short); };
 function place(id, position) { return fill(pick(PLACE[position] || PLACE.otk), id); }
 function react(id, key) { const R = REACT[id]; if (!R || !R[key]) return null; return fill(pick(R[key]), id); }
 // (anyone without lines of their own: an aftercare in few words, and terms without her own reasons)
@@ -128,7 +128,7 @@ const AFTER_ANY = {
 const TERMS_ANY = [{ who: 'captain', text: 'When it’s needed, I deal with it myself, and then it’s done.' }];
 function captain(key, id) { return CAPTAIN[key] ? fill(pick(CAPTAIN[key]), id) : null; }
 // The aftercare conversation, as steps for the page to play (js/talk.js): { who: 'subject' | 'captain', text } lines, and { choose: [{ label,
-// then: [...] }] }: what Silas says, explored (any or all of reassuring her, saying why it mattered, asking how she is), then what she's to do
+// then: [...] }] }: what James says, explored (any or all of reassuring her, saying why it mattered, asking how she is), then what she's to do
 // with the rest of the evening, one of them.
 // (mood 'unbroken': it ended with her defiance still standing; the safe word's opening comes first all the same)
 function after(id, outcome, mood) {
@@ -142,7 +142,7 @@ function after(id, outcome, mood) {
     { who: 'subject', text: fill(A.close, id), expr: 'soft' },
   ];
 }
-// The terms, as steps: Silas's terms and her question, then he asks for her word, and she agrees and gives it.
+// The terms, as steps: James's terms and her question, then he asks for her word, and she agrees and gives it.
 function terms(id) {
   const T = TERMS[id] || TERMS_ANY, A = AGREE[id], steps = T.map(s => ({ who: s.who, text: fill(s.text, id) }));
   if (!A) return steps.concat([{ who: 'captain', text: WORD_ASK }]);

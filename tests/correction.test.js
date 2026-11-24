@@ -18,7 +18,7 @@ const loaded = Promise.all([Figure.adopt(meta, 'f', buf('thorn_f.glb')), Figure.
 function setup(position, o) {
   const scene = new THREE.Scene(), stage = { scene, camera: new THREE.PerspectiveCamera(), go() {}, fade: fn => fn() };
   const lr = LivingRoom.build(scene), bay = lr.bay(); bay.clear(position);
-  const ses = Session.create(stage, bay, Object.assign({ captain: { outfit: 'henley' }, position, between: 'aside', queue: [{ id: 'rose', sex: 'f', outfit: 'jeans' }], witnesses: [], sound: false }, o || {}));
+  const ses = Session.create(stage, bay, Object.assign({ captain: { outfit: 'tee' }, position, between: 'aside', queue: [{ id: 'rose', sex: 'f', outfit: 'jeans' }], witnesses: [], sound: false }, o || {}));
   const ev = []; ses.on((t, d) => ev.push([t, d]));
   ses.start(); return { ses, ev, lr, step: n => { for (let i = 0; i < n; i++) ses.update(0.05); } };
 }

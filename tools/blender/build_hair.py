@@ -334,8 +334,51 @@ def build_style(name, sex):
             for k in range(3):
                 P = S.over([np.array([sx * 1.45, 0.55 - 0.05 * k, 0.55 + 0.12 * k]), np.array([sx * 1.55, -0.25, 0.5 + 0.12 * k])], 8, 0.04, 0.05)
                 S.lock(P, w0=0.12, t0=0.035, taper=2.0)
+    elif name == 'sweptback':
+        # (Thorn) James's: parted on his left, worked back and over to his right from a lifted front; the heavy side falling over his right
+        # temple to the top of the ear, the parted side lying back over the temple; the back down to the collar; short at the sideburns, into
+        # the beard. The temples a little high.
+        px = 0.5
+        S.shell(hairline(front=1.18, temple=0.7, sideburn=-0.2, over_ear=0.42, behind=-0.42, nape=-0.8), off=0.045, thick=0.06)
+        for k in range(30):      # (the heavy side: from the part, up and across the top, down over his right temple and back over the ear)
+            s = k / 29
+            root = np.array([px - 0.05, 1.3 + 0.85 * s ** 0.8, 1.2 - 1.8 * s])
+            over = np.array([-0.45 - 0.15 * s, 1.9 - 0.25 * s, 0.8 - 1.35 * s])
+            side = np.array([-1.5, 0.62 + 0.25 * s, 0.4 - 1.25 * s])
+            lift = 0.07 * ss(0.45, 0.0, s)
+            P = S.over([root, over, side], 26, 0.1 + lift + 0.03 * R.random(), 0.09 + 0.03 * s, extra=lambda x, l=lift: 0.05 * l / 0.07 * math.sin(math.pi * min(1.0, x * 1.6)))
+            S.lock(P, w0=0.3 + 0.06 * R.random(), t0=0.075, taper=2.0, tip_w=0.05)
+        for k in range(12):      # (along the front hairline, lifted, and over to his right with the rest: a clean edge to the sweep)
+            s = k / 11
+            root = np.array([px - 0.1 - 1.0 * s, 1.22 - 0.25 * s * s, 1.35 - 0.25 * s])
+            over = np.array([-0.55 - 0.6 * s, 1.75 - 0.35 * s, 0.85 - 0.5 * s])
+            side = np.array([-1.5, 0.62 + 0.1 * s, 0.35 - 0.6 * s])
+            P = S.over([root, over, side], 24, 0.1 + 0.03 * R.random(), 0.09, extra=lambda x: 0.07 * math.sin(math.pi * min(1.0, x * 1.4)))
+            S.lock(P, w0=0.3 + 0.05 * R.random(), t0=0.075, taper=2.0, tip_w=0.05)
+        for k in range(16):      # (the parted side: back over his left temple to behind the ear)
+            s = k / 15
+            root = np.array([px + 0.06, 1.3 + 0.85 * s ** 0.8, 1.2 - 1.8 * s])
+            side = np.array([1.45, 0.85 + 0.3 * s, 0.2 - 1.2 * s])
+            back = np.array([1.25, 0.45 - 0.1 * s, -1.15 - 0.2 * s])
+            P = S.over([root, side, back], 22, 0.08 + 0.02 * R.random(), 0.08)
+            S.lock(P, w0=0.28 + 0.05 * R.random(), t0=0.06, taper=2.2, tip_w=0.05)
+        for sx in (1, -1):      # (the crown and the back, worked down close to the head, tapering off above the nape; shorter at the sides)
+            for k in range(13):
+                a = 1.3 + (math.pi - 1.3) * k / 12
+                root = np.array([sx * 0.35 * math.sin(a), 1.9, -0.5 + 0.1 * math.cos(a)])
+                mid = np.array([sx * 1.45 * math.sin(a), 0.95, 1.45 * math.cos(a)])
+                yend = float(np.interp(a, [1.3, 2.0, math.pi], [0.35, -0.2, -0.55])) + 0.12 * (R.random() - 0.5)
+                end = np.array([sx * 1.5 * math.sin(a), yend, 1.5 * math.cos(a)])
+                P = S.over([root, mid, end], 22, 0.09 + 0.02 * R.random(), 0.035)
+                S.lock(P, w0=0.3 + 0.05 * R.random(), t0=0.06, taper=1.4)
+            for k in range(3):      # (short at the sideburns, down into the beard)
+                P = S.over([np.array([sx * 1.45, 0.55 - 0.05 * k, 0.55 + 0.12 * k]), np.array([sx * 1.55, -0.25, 0.5 + 0.12 * k])], 8, 0.04, 0.05)
+                S.lock(P, w0=0.12, t0=0.035, taper=2.0)
     elif name == 'beard':
         beard(S, h)
+    elif name == 'trim':
+        # (Thorn) James's: the same short full beard, its cheek line lower, running down from the sideburn to the corner of the moustache
+        beard(S, h, cheek=([0, 0.55, 0.9, 1.15, 1.32, 1.5], [-0.7, -0.76, -0.88, -0.72, -0.35, 0.05]))
     return S
 
 def coil(S, C, axis, r0, r1, turns, tube, n, mess=0.0, hug=None):
@@ -368,13 +411,15 @@ def ringlet(S, root, length, r, tube, turns, out):
         P.append(S.h.clear(c + (e1 * math.cos(a) + e2 * math.sin(a)) * rr, 0.1))
     S.lock(np.array(P), w0=tube, t0=tube * 0.85, taper=3.0, root_w=0.7, shade=lambda x: 0.8 + 0.2 * ss(0.0, 0.5, x))
 
-def beard(S, h):
+def beard(S, h, cheek=None):
     """His beard: a short full beard and moustache over the jaw, chin and upper lip; its edges cut clean along their lines (down from the
-    sideburns in front of the ears, along the cheek, round the mouth) and feathered, its surface clumped."""
+    sideburns in front of the ears, along the cheek, round the mouth) and feathered, its surface clumped. (cheek: where its cheek line runs,
+    by how far out from the middle)"""
     HV, HT = h.HV, h.HT
+    CX, CY = cheek or ([0, 0.55, 1.0, 1.3, 1.5], [-0.68, -0.66, -0.6, -0.3, 0.05])
     def field(v):
         x, y, z = v; ax = abs(x)
-        top = float(np.interp(ax, [0, 0.55, 1.0, 1.3, 1.5], [-0.68, -0.66, -0.6, -0.3, 0.05]))      # (the cheek line, rising to the sideburn)
+        top = float(np.interp(ax, CX, CY))      # (the cheek line, rising to the sideburn)
         f = top - y
         f = min(f, (z - 0.05) * 1.2 + 0.25 * ss(1.25, 1.0, ax))                                       # (in front of the ears)
         mouth = ((x / 0.5) ** 2 + ((y + 1.19) / 0.19) ** 2) - 1.0
@@ -387,10 +432,10 @@ def beard(S, h):
         return 0.05 - 0.035 * lip + 0.05 * ss(-1.6, -2.0, y) + 0.018 * math.sin(x * 11 + y * 3) * math.cos(y * 9 - x * 2)
     solid_patch(S, V, T, Sv, 0.06, 0.07, 0.1, 0.82, bump=bump)
 
-STYLES = [('curls', 'f'), ('swept', 'f'), ('sidepart', 'f'), ('chignon', 'f'), ('workbun', 'f'), ('cropped', 'f'), ('tousled', 'm'), ('beard', 'm')]
+STYLES = [('curls', 'f'), ('swept', 'f'), ('sidepart', 'f'), ('chignon', 'f'), ('workbun', 'f'), ('cropped', 'f'), ('tousled', 'm'), ('beard', 'm'), ('sweptback', 'm'), ('trim', 'm')]      # (Thorn: sweptback and trim last, so the others come out as they were)
 
 def to_object(S):
-    name = ('Beard_' if S.name == 'beard' else 'Hair_') + S.name
+    name = ('Beard_' if S.name in ('beard', 'trim') else 'Hair_') + S.name
     me = bpy.data.meshes.new(name); ob = bpy.data.objects.new(name, me); bpy.context.scene.collection.objects.link(ob)
     me.from_pydata([toB(v) for v in S.V], [], [tuple(f) for f in S.F]); me.update()
     ca = me.color_attributes.new('Color', 'FLOAT_COLOR', 'POINT'); cols = np.array([[c[0], c[1], c[2], 1.0] for c in S.C], np.float32)

@@ -1373,7 +1373,7 @@ function surfaceGeo(fn, NU, NV) {
 function buildHead(F, spec, S) {
   const K = FACE, HS = HEAD_SCALE, k = HEAD_K * (spec.headScale || HS), Hs = headShape(K.jaw * (S.f ? 1 : spec.sex === 'n' ? 1.03 : 1.06));
   const H = new THREE.Group(); H.scale.setScalar(k); H.position.set(0, -0.012 - Hs.chin * k * 0.92, 0.012); F.bone.head.add(H); F.head = H;
-  const P = { skin: spec.skin, lips: spec.lips || shade(spec.skin, S.f ? -0.22 : -0.12), eyes: spec.eyes, hair: spec.hair, hairDk: shade(spec.hair, -0.35), beard: shade(spec.hair, -0.2) };
+  const P = { skin: spec.skin, lips: spec.lips || shade(spec.skin, S.f ? -0.22 : -0.12), eyes: spec.eyes, hair: spec.hair, hairDk: shade(spec.hair, -0.35), beard: spec.beardCol || shade(spec.hair, -0.2) };      // (Thorn: a beard can be its own colour, spec.beardCol)
   const MAN = !S.f, OLD = (spec.age || 0) >= 45, ANDRO = spec.sex === 'n';      // (non-gendered: between the two, neither's marks)
   const skinM = tmat(spec.skin, { rim: '#6a5048', rimK: 0.5 });
   const head = new THREE.Mesh(surfaceGeo(Hs.point, 40, 40), skinM); head.castShadow = true; H.add(head); ink(head, 0.06);
@@ -1472,7 +1472,8 @@ function buildHair(F, spec, S, H, Hs, k) {
   const G = GLB.hair, gname = 'Hair_' + (style === 'braid' ? spec.hairCap || 'swept' : style);
   if (G && G[gname]) {
     const gm = new THREE.Mesh(G[gname], tmat(spec.hair, { rim: '#3a3a4a', rimK: 0.6, vc: true })); gm.castShadow = true; H.add(gm); ink(gm, 0.035); F.hairMesh = gm;
-    if (spec.beard && G.Beard_beard) { const bm = new THREE.Mesh(G.Beard_beard, tmat(shade(spec.hair, -0.1), { rim: '#3a3a4a', rimK: 0.5, vc: true })); bm.castShadow = true; H.add(bm); ink(bm, 0.03); }
+    const BG = G['Beard_' + (spec.beardStyle || 'beard')] || G.Beard_beard;      // (Thorn: which beard, spec.beardStyle: beard (Fenwick's), trim)
+    if (spec.beard && BG) { const bm = new THREE.Mesh(BG, tmat(spec.beardCol || shade(spec.hair, -0.1), { rim: '#3a3a4a', rimK: 0.5, vc: true })); bm.castShadow = true; H.add(bm); ink(bm, 0.03); }
     if (style === 'braid') braidOf(F, spec, H, tmat(spec.hair, { rim: '#3a3a4a', rimK: 0.6 }));
     return;
   }

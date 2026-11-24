@@ -18,7 +18,7 @@
 //   it was dealt with, opts.coverGap to change it, nor as something's being said: false, and try again). ses.breakNow(): the break. Her hand, the player's two ways with it:
 //   ses.tell() (moved out of the way) · ses.takeHand() (the wrist, held from then on); ses.handDown() as Meridian had it · ses.receptive
 //   (They never come up out of position: Fenwick has no use for it.)
-//   (Thorn) what Silas strikes with: ses.implement(kind) · ses.implements() (those the position allows, js/implements.js: the hand and the
+//   (Thorn) what he strikes with (Thorn's James): ses.implement(kind) · ses.implements() (those the position allows, js/implements.js: the hand and the
 //   hairbrush anywhere, the paddle and the belt over the table) · opts.implement. Held in his right hand as he swings, laid by while he
 //   soothes or dresses her; what each takes and leaves (js/pain.js), and its sound.
 // (Internally the corrector is still `captain` and the room `bay`: Meridian's names, kept so the engine stays diffable against it.)

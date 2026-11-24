@@ -1,4 +1,4 @@
-// What's said (js/lines.js): Rose's lines for everything the correction asks of her, Silas's for every position the living room offers and
+// What's said (js/lines.js): Rose's lines for everything the correction asks of her, James's for every position the living room offers and
 // every implement, the aftercare's choices each answered, and her terms ending in her word.
 const test = require('node:test'), assert = require('node:assert/strict');
 globalThis.window = globalThis;
@@ -11,7 +11,7 @@ test('Rose has a line for every moment the correction asks one of her, and for e
   assert.equal(Lines.react('rose', 'nothing'), null);
 });
 
-test('Silas places her in every position the room offers, puts her back, and takes up each implement', () => {
+test('James places her in every position the room offers, puts her back, and takes up each implement', () => {
   for (const p of ['otk', 'table', 'worktop']) assert.match(Lines.place('rose', p), /\w/, p);
   for (const k of ['hands', 'pin', 'take', 'down', 'worktop', 'table', 'hairbrush', 'paddle', 'belt', 'hand']) assert.ok(Lines.captain(k, 'rose'), k);
   assert.ok(!/\{name\}|\{word\}/.test(Lines.place('rose', 'otk') + Lines.captain('hands', 'rose')), 'filled in');

@@ -462,7 +462,7 @@ function build(scene) {
     'The kitchen': [[-0.2, 1.6, 0.6], [0.6, 1.0, 3.75]], 'From above': [[0, 13, 0.02], [0, 0, 0]],
   };
   // ── Thorn: the room for a correction (js/session.js's `bay`): where each of its positions is, from the furniture as it stands now. Across
-  // the knee on the dining chair, pulled out into the room (Silas square on it, as on Fenwick's oak chair); across the knee perched on the front
+  // the knee on the dining chair, pulled out into the room (James square on it, as Silas on Fenwick's oak chair); across the knee perched on the front
   // of the sofa's long side (she lies along it in front of him, her near arm up on the seat), the coffee table pushed back toward the TV for it;
   // standing at the kitchen's long run, palms flat on the worktop over the washing machine; over the dining table, from its end, holding its
   // sides. The aftercare on the sofa, side by side. Private: nobody watches. clear(position) moves what's in the way of one (the coffee table,

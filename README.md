@@ -1,6 +1,6 @@
 # Thorn
 
-Fenwick Hall's base models, its correction and pain engine, and its living room, ported from [fenwick](https://github.com/asonichero/fenwick). On them is a correction test with Silas and Rose, Fenwick's characters, in modern clothes. The page has Fenwick's figures character panel, but it runs one whole correction rather than the figures page's endless loop of rounds: she's placed, you run it, it ends, then the aftercare, then a summary of what came of it.
+Fenwick Hall's base models, its correction and pain engine, and its living room, ported from [fenwick](https://github.com/asonichero/fenwick). On them is a correction test with Rose, Fenwick's character, and James Edwards, based on Fenwick's Silas but with his own look, both in modern clothes. The page has Fenwick's figures character panel, but it runs one whole correction rather than the figures page's endless loop of rounds: she's placed, you run it, it ends, then the aftercare, then a summary of what came of it.
 
 ## Run it
 
@@ -14,13 +14,13 @@ No build step and no dependencies: three.js r128 is in `vendor/`.
 
 ## The correction test (`correction.html`)
 
-The living room at night. You play Silas.
+The living room at night. You play James.
 
 - **The panel, down the left** (as Fenwick's figures page has it):
   - **Her:** who Rose is and her word, *Lantern*.
-  - **Outfit:** jeans (a plain red tee, jeans, trainers), cardigan (her red cardigan over a shirt, jeans, flats), lounge (a marl top, joggers, slippers), work (a henley, chinos, work shoes from the bakery), or None.
-  - **Clothes:** before it begins, how she starts. During it, Silas changes them, seen: T-shirt or top raised, jeans or trousers lowered, knickers lowered.
-  - **Silas:** henley (sleeves pushed up, jeans, boots), flannel (a check shirt open over a tee, work trousers, boots), knit (a cardigan over a shirt, chinos, loafers), or None.
+  - **Outfit:** jeans (a plain pink tee, jeans, trainers), cardigan (her red cardigan over a shirt, jeans, flats), lounge (a marl top, joggers, slippers), work (a henley, chinos, work shoes from the bakery), or None.
+  - **Clothes:** before it begins, how she starts. During it, James changes them, seen: T-shirt or top raised, jeans or trousers lowered, knickers lowered.
+  - **James:** tee (a plain maroon T-shirt, jeans, boots), henley (sleeves pushed up, jeans, boots), flannel (a check shirt open over a tee, work trousers, boots), knit (a cardigan over a shirt, chinos, loafers), or None.
   - **Position:**
     - Across the knee on a dining chair pulled out into the room.
     - Across the knee on the sofa. The coffee table is pushed back for this one.
@@ -41,10 +41,10 @@ The living room at night. You play Silas.
     - End (**Enter**).
     - Cameras (**C**).
   - The meter: her distress against the bands, with the bar where she'd say her word.
-- **Implements:** Silas's hand, a wooden hairbrush (every position), and a long thick paddle and a folded belt (over the table only). Each is held in his right hand, and its striking face lands where his palm would. The brush lands on one cheek; the paddle and the belt land across both.
+- **Implements:** James's hand, a wooden hairbrush (every position), and a long thick paddle and a folded belt (over the table only). Each is held in his right hand, and its striking face lands where his palm would. The brush lands on one cheek; the paddle and the belt land across both.
   - Each has its own weight in the pain model. The hairbrush is sharper than the hand. The paddle is the heaviest, with more of it ache. The belt is the stingiest.
   - Each leaves its own marks and makes its own sound.
-  - Silas announces each one as he takes it up, and Rose answers.
+  - James announces each one as he takes it up, and Rose answers.
   - Moved off the table, the paddle or the belt goes back to his hand. He puts it down to soothe her or to dress her.
 - **The end:**
   - **End:** he soothes her, then dresses her.
@@ -58,24 +58,25 @@ The living room at night. You play Silas.
 
 | File | What it is |
 |---|---|
-| `models/thorn_m.glb`, `models/thorn_hair.glb` | Fenwick's male model (Meridian's shirt, tunic, trousers, briefs and boots; his nightclothes) and the hair, unchanged. |
+| `models/thorn_m.glb` | Fenwick's male model (Meridian's shirt, tunic, trousers, briefs and boots; his nightclothes), unchanged. |
+| `models/thorn_hair.glb` | Fenwick's hair styles and beard, unchanged, plus two built for James: `sweptback` (parted on his left, swept back and over to his right, short at the back) and `trim` (the beard with its cheek line running down from the sideburn to the moustache). |
 | `models/thorn_f.glb` | Fenwick's female model, rebuilt with `tools/blender/build_figures.py` in Meridian's modern layers rather than Fenwick's period dress: a shirt (sleeves pushed up) and a long-sleeved top, each down or raised; trousers, up or lowered; briefs, up or lowered; shoes. The body is byte-identical to Fenwick's, and the joints are the same. |
 | `models/thorn_meta.json` | The joints and landmarks; hers measured anew for the modern layers. |
-| `js/figure.js`, `js/poses.js` | The figures and posing, ported. Added: a `jeans` pattern for the trousers (denim twill, fading, contrast double-stitching, scooped and patch pockets, a yoke, rivets) and a `plaid` top (a check flannel shirt open over a tee); boots in the wearer's own colour. |
+| `js/figure.js`, `js/poses.js` | The figures and posing, ported. Added: a `jeans` pattern for the trousers (denim twill, fading, contrast double-stitching, scooped and patch pockets, a yoke, rivets) and a `plaid` top (a check flannel shirt open over a tee); boots in the wearer's own colour; a beard in its own colour and style (`beardCol`, `beardStyle`). |
 | `js/pain.js` | The pain model, ported, with the hairbrush, the paddle and the belt added. |
 | `js/session.js` | The correction, ported. Added: the implements (held, aimed, laid by, marks, sounds, lines, where each is allowed). |
 | `js/implements.js` | New: the hairbrush, the paddle and the belt, built in the hand's frame. |
 | `js/livingroom.js`, `js/kit.js` | The living room, ported. Added: a dining table and an armless dining chair, and `lr.bay()`, which gives the room's positions to the correction, with its cameras and the coffee table moved for the sofa. |
-| `js/cast.js`, `js/lines.js` | New for Thorn: Silas (37, a tree surgeon) and Rose (19, at her mum's bakery) as Fenwick wrote them, now a couple in the present day. Rose's lines, Silas's, the aftercare and her terms are rewritten for now (the woods after dark, a dead phone, her nan's), in the same structure. |
+| `js/cast.js`, `js/lines.js` | New for Thorn: Rose (19, at her mum's bakery) as Fenwick wrote her, and James Edwards (37, a tree surgeon) with Fenwick's Silas's temperament and build and his own look: dark brown hair swept back from a left part, a short ginger-brown beard, brown eyes, fair skin, a maroon tee. A couple in the present day. Rose's lines, James's, the aftercare and her terms are rewritten for now (the woods after dark, a dead phone, her nan's), in the same structure. |
 | `js/talk.js`, `js/audio.js`, `js/stage.js` | Conversations, synthesised sound and the renderer, ported. |
-| `tools/blender/`, `tools/export-head.js` | The model builds. Hers is built in modern layers; the outputs are named `thorn_*`, and `THORN_OUT` builds somewhere else. |
+| `tools/blender/`, `tools/export-head.js` | The model builds. Hers is built in modern layers, and the hair adds James's styles; the outputs are named `thorn_*`, and `THORN_OUT` builds somewhere else. |
 
 To rebuild the models you need Blender 5 (the `bpy` module from PyPI works, with scikit-image):
 
 ```
 python3 -m venv .blender && .blender/bin/pip install "bpy==5.1.*" scikit-image
 .blender/bin/python tools/blender/build_figures.py -- f m      # the bodies, their rig and keys, and the clothes (about 4 minutes each)
-node tools/export-head.js && .blender/bin/python tools/blender/build_hair.py      # the hair and Silas's beard
+node tools/export-head.js && .blender/bin/python tools/blender/build_hair.py      # the hair and the beards (seconds)
 ```
 
 Not ported: Fenwick's game, prologue, chapters, estate, the other rooms and cast, the walking, the pose editor, `js/discipline.js` (an unused scripted correction), and `tools/measure-reference.py` (which measured the turnaround `reference.json` came from).

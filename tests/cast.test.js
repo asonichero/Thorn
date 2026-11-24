@@ -1,4 +1,4 @@
-// The cast (js/cast.js): Silas and Rose as Fenwick Hall has them, grown-ups both, in modern clothes: each outfit one of the patterns js/figure.js
+// The cast (js/cast.js): James Edwards (on Fenwick's Silas) and Rose (Fenwick's), grown-ups both, in modern clothes: each outfit one of the patterns js/figure.js
 // draws (Meridian's off-duty layers), each a figure the engine can make; and what the correction reads off her.
 const test = require('node:test'), assert = require('node:assert/strict');
 globalThis.window = globalThis;
@@ -6,17 +6,19 @@ const Cast = require('../js/cast.js');
 const TOPS = ['henley', 'thermal', 'open', 'waistcoat', 'cardigan', 'tee', 'sweatervest', 'plaid'], LEGS = ['canvas', 'joggers', 'chinos', 'work', 'combat', 'pressed', 'jeans'];
 const SHOES = ['boots', 'soft', 'deck', 'work', 'sneakers', 'flats', 'loafers'];
 
-test('Rose and Silas, adults both, as Fenwick has them: her body, her word, how she takes it', () => {
+test('Rose and James, adults both: her body, her word and how she takes it, as Fenwick has them; his name and his own look', () => {
   assert.deepEqual(Cast.IDS, ['rose']);
   const R = Cast.ROSTER.rose;
   assert.ok(R.age >= 18 && Cast.SQUIRE.age >= 18, 'grown-ups');
   assert.equal(R.word, 'Lantern'); assert.equal(R.body.h.f, 1.65); assert.ok(R.pain.tolerance > 0 && R.pain.resilience > 0);
   assert.equal(R.meters.wilfulness, 0.3); assert.equal(Cast.SQUIRE.h, 1.86); assert.ok(Cast.SQUIRE.look.beard);
-  assert.ok(Cast.wriggle('rose') > 0 && Cast.wriggle('rose') <= 1); assert.ok(Cast.pitch('rose') > Cast.pitch('silas'));
+  assert.equal(Cast.SQUIRE.name, 'James Edwards'); assert.equal(Cast.SQUIRE.short, 'James'); assert.equal(Cast.SQUIRE.look.hairStyle, 'sweptback');
+  const J = Cast.squireSpec(); assert.equal(J.beardCol, Cast.SQUIRE.look.beardCol); assert.notEqual(J.beardCol, J.hair, 'his beard its own colour'); assert.equal(J.off.top, 'tee', 'a T-shirt, most days');
+  assert.ok(Cast.wriggle('rose') > 0 && Cast.wriggle('rose') <= 1); assert.ok(Cast.pitch('rose') > Cast.pitch('james'));
 });
 
 test('every outfit is modern: a top, legs and shoes js/figure.js draws, a note for the set-up', () => {
-  for (const [who, W] of [['rose', Cast.WARDROBE.rose], ['silas', Cast.SQUIRE.wardrobe]]) {
+  for (const [who, W] of [['rose', Cast.WARDROBE.rose], ['james', Cast.SQUIRE.wardrobe]]) {
     assert.ok(Object.keys(W).length >= 3, who + ' has outfits');
     for (const k in W) {
       const O = W[k];
@@ -27,10 +29,10 @@ test('every outfit is modern: a top, legs and shoes js/figure.js draws, a note f
   }
 });
 
-test('each outfit as a figure: off duty in her own; nothing on (None); Silas in his', () => {
+test('each outfit as a figure: off duty in her own; nothing on (None); James in his', () => {
   for (const k of Cast.outfits('rose')) { const s = Cast.figureSpec('rose', 'f', k); assert.equal(s.sex, 'f'); assert.equal(s.outfit, 'offduty'); assert.equal(s.off, Cast.WARDROBE.rose[k]); assert.equal(s.outfitKey, k); assert.equal(s.hairStyle, 'braid'); }
   assert.equal(Cast.figureSpec('rose', 'f', 'none').outfit, 'none');
   assert.equal(Cast.figureSpec('rose').outfitKey, Cast.outfits('rose')[0]);
   for (const k of Cast.squireOutfits()) { const s = Cast.squireSpec({ outfit: k }); assert.equal(s.sex, 'm'); assert.equal(s.outfit, 'offduty'); assert.equal(s.off, Cast.SQUIRE.wardrobe[k]); }
-  assert.equal(Cast.squireSpec({ outfit: 'none' }).outfit, 'none'); assert.equal(Cast.squireSpec().outfitKey, 'henley');
+  assert.equal(Cast.squireSpec({ outfit: 'none' }).outfit, 'none'); assert.equal(Cast.squireSpec().outfitKey, 'tee');
 });
