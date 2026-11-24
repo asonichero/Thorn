@@ -582,7 +582,7 @@ function create(stage, bay, opts) {
     const twist = sp.twist.to(sq * (Math.sin(t * 1.4 + ph[2]) * 0.6 + Math.sin(t * 5.1 + ph[3]) * 0.4), dt), shift = sp.shift.to(sq * Math.sin(t * 0.47 + ph[4]), dt);
     // (Fenwick: with her skirt down, her legs kept still: only her hips and back move, turning, so nothing of her can come through it; raised,
     // she kicks and stamps as ever)
-    const legs = F.skirt && F.state.top !== 'up' ? 0 : 1;
+    const legs = F.skirt && !F.skirtKey && F.state.top !== 'up' ? 0 : 1;      // (Thorn: not for a skirt of her own (F.skirtKey): it isn't cloth)
     const k = sp.kick.to(0, dt) * legs, ko = sp.kickO.to(0, dt) * legs, fl = sp.flinch.to(0, dt), ar = sp.arch.to(0, dt), bk = sp.buck.to(0, dt);
     const lk = { L: sp.lkL.to(0, dt) * legs, R: sp.lkR.to(0, dt) * legs }, spent = 1 - R.ff, aw = otk ? sp.away.to(0, dt) : 0, shr = sp.shrug.to(0, dt);
     const armUp = { L: sp.armL.to(0, dt), R: sp.armR.to(0, dt) }, rb = { L: sp.rbL.to(0, dt), R: sp.rbR.to(0, dt) };
@@ -1093,7 +1093,7 @@ function create(stage, bay, opts) {
       // (Fenwick: a skirt, draped as she lies, isn't animated up or down: the scene goes through black and it's changed there)
       const a = st.act;
       // (and her drawers, across the knee, under a chemise that goes up and down with them)
-      if (stage.fade && ((a.key === 'top' && cur.f.skirt) || (a.key === 'under' && cur.f.autoTop))) { a.fade = true; a.dur = 1.0; stage.fade(() => { a.swapped = true; cur.f.setClothes({ [a.key]: a.to }); emit('state'); }); }
+      if (stage.fade && ((a.key === 'top' && cur.f.skirt && !cur.f.skirtKey) || (a.key === 'under' && cur.f.autoTop))) { a.fade = true; a.dur = 1.0; stage.fade(() => { a.swapped = true; cur.f.setClothes({ [a.key]: a.to }); emit('state'); }); }
     }
     const a = st.act; if (!a) return;
     a.t += dt; const u = a.t / a.dur;
@@ -1107,7 +1107,8 @@ function create(stage, bay, opts) {
     const thighs = W_(F, 'thighL').lerp(W_(F, 'thighR'), 0.5).lerp(knees, 0.42).addScaledVector(bn, 0.09 * s);
     const seat = F.surface('cheekL', null, 0.02).p.lerp(F.surface('cheekR', null, 0.02).p, 0.5);
     let A_, B_;
-    if (a.key === 'top' && F.skirt) {
+    const skirtAct = F.skirt && a.key === (F.skirtKey || 'top');      // (Thorn: a skirt is raised from its hem, whichever layer it is)
+    if (skirtAct) {
       // (Fenwick: a skirt raised from its hem: the hand takes the hem at the back of her calves (a kirtle's, behind her knees) and carries
       // it up her legs and over her seat to the small of her back)
       const calves = W_(F, 'shinL').lerp(W_(F, 'shinR'), 0.5).lerp(W_(F, 'footL').lerp(W_(F, 'footR'), 0.5), 0.45).addScaledVector(bn, 0.11 * s);
@@ -1117,7 +1118,7 @@ function create(stage, bay, opts) {
     else { A_ = waist.clone().addScaledVector(down, 0.1 * s); B_ = thighs; }
     const lowering = a.key === 'top' ? a.to === 'up' : a.to === 'down';
     // (a skirt's hem carried round the back of her legs and out over her seat, not through her)
-    const via = a.key === 'top' && F.skirt ? seat.clone().addScaledVector(bn, 0.15 * s) : null;
+    const via = skirtAct ? seat.clone().addScaledVector(bn, 0.15 * s) : null;
     return lowering ? { from: A_, to: B_, bn, over: seat, via } : { from: B_, to: A_, bn, over: seat, via };
   }
   function callWord() {

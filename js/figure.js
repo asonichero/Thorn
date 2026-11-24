@@ -1489,7 +1489,7 @@ function buildHair(F, spec, S, H, Hs, k) {
     const gm = new THREE.Mesh(G[gname], tmat(spec.hair, { rim: '#3a3a4a', rimK: 0.6, vc: true })); gm.castShadow = true; H.add(gm); ink(gm, 0.035); F.hairMesh = gm;
     const BG = G['Beard_' + (spec.beardStyle || 'beard')] || G.Beard_beard;      // (Thorn: which beard, spec.beardStyle: beard (Fenwick's), trim)
     if (spec.beard && BG) { const bm = new THREE.Mesh(BG, tmat(spec.beardCol || shade(spec.hair, -0.1), { rim: '#3a3a4a', rimK: 0.5, vc: true })); bm.castShadow = true; H.add(bm); ink(bm, 0.03); }
-    if (style === 'braid') braidOf(F, spec, H, tmat(spec.hair, { rim: '#3a3a4a', rimK: 0.6 }));
+    if (style === 'braid') { const hm = tmat(spec.hair, { rim: '#3a3a4a', rimK: 0.6 }); if (spec.braidKind === 'pigtails') { braidOf(F, spec, H, hm, { side: 1 }); braidOf(F, spec, H, hm, { side: -1 }); } else braidOf(F, spec, H, hm); }
     return;
   }
   const hm = tmat(spec.hair, { rim: '#3a3a4a', rimK: 0.6 }), put = (geo, x, y, z, rot, sc) => { const m = new THREE.Mesh(geo, hm); m.position.set(x, y, z); if (rot) m.rotation.set(rot[0], rot[1], rot[2]); if (sc) m.scale.set(sc[0], sc[1], sc[2]); m.castShadow = true; H.add(m); ink(m, 0.05); return m; };
@@ -1523,7 +1523,7 @@ function buildHair(F, spec, S, H, Hs, k) {
   // (Fenwick: a long plait from the nape to the waist, the strands crossing in lobes down its length, tied off with a tuft below the tie;
   // spec.braidLen, in head units, how far it reaches (8: the waist). It hangs with gravity from its pivot, as the ponytail does, carried
   // a little out from the back so it rides over the shoulder blades.)
-  if (style === 'braid') braidOf(F, spec, H, hm);
+  if (style === 'braid') { if (spec.braidKind === 'pigtails') { braidOf(F, spec, H, hm, { side: 1 }); braidOf(F, spec, H, hm, { side: -1 }); } else braidOf(F, spec, H, hm); }
 }
 // (Fenwick: the plait. Its line runs from inside the gathered hair at the back of the head, out through its pivot and down the back, past the
 // tie to the end of the tuft; the tube along it rounded over at the top where the locks gather into it (no hard rim), the strands crossing in
@@ -1532,12 +1532,14 @@ function buildHair(F, spec, S, H, Hs, k) {
 // from the one above, the stiffness of the plait near its root easing off down it), kept out of the head and the back. So it bends down its
 // length as it falls, over the shoulders, down past the face when she's bent over, rather than swinging stiff from the head as one piece.)
 // (Thorn: spec.braidKind 'loose': the same chain, but long hair worn loose down the back, half-up from the cap: a wide, flat fall of it, waved,
-// darker at the roots and lighter to the ends (vertex colours over the hair's own), its ends uneven, no tie)
-function braidOf(F, spec, H, hm) {
-  const loose = spec.braidKind === 'loose';
-  const len = spec.braidLen || 8, piv = new THREE.Group(); piv.position.set(0, 0.9, -2.0); H.add(piv);
+// darker at the roots and lighter to the ends (vertex colours over the hair's own), its ends uneven, no tie. 'pigtails': two of them, one
+// either side high at the back of the head (o.side), narrower and shorter, each gathered in a tie where it leaves the head; each its own chain.)
+function braidOf(F, spec, H, hm, opt) {
+  const sx = (opt && opt.side) || 0, pig = !!sx, loose = pig || spec.braidKind === 'loose';
+  const len = spec.braidLen || 8, piv = new THREE.Group(); piv.position.set(pig ? sx * 0.7 : 0, pig ? 1.05 : 0.9, pig ? -1.65 : -2.0); H.add(piv);
   const TUFT = 0.95, tieAt = new V3(0, -len + 0.15, -0.72);
-  const curve = new THREE.CatmullRomCurve3([new V3(0, 0.34, 0.3), new V3(0, 0, 0), new V3(0, -0.7, -0.55), new V3(0, -2.2, -0.85), new V3(0, -len * 0.62, -0.95), new V3(0, -len, -0.7), new V3(0, -len - TUFT, -0.6)]);
+  const ox = t => sx * 0.45 * Math.min(1, t);      // (a pigtail out a little from the head as it falls)
+  const curve = new THREE.CatmullRomCurve3([new V3(-sx * 0.3, 0.34, 0.3), new V3(0, 0, 0), new V3(ox(0.3), -0.7, -0.55), new V3(ox(0.7), -2.2, -0.85), new V3(ox(1), -len * 0.62, -0.95), new V3(ox(1), -len, -0.7), new V3(ox(1), -len - TUFT, -0.6)]);
   const Lt = curve.getLength(), at = s => curve.getPointAt(clamp(s / Lt, 0, 1));
   const nearest = q => { let best = 0, bd = 1e9; for (let i = 0; i <= 400; i++) { const d = at(Lt * i / 400).distanceToSquared(q); if (d < bd) { bd = d; best = Lt * i / 400; } } return best; };
   const sPiv = nearest(new V3(0, 0, 0)), sTie = nearest(tieAt), N = Math.round(len * 2.2), R0 = 0.4, RAD = 12;
@@ -1548,8 +1550,9 @@ function braidOf(F, spec, H, hm) {
     let k = 1, side = 0;
     if (loose) {
       // (across: wide at the back of the head, wider through its length, the ends uneven; through: thin; waved down its length)
-      const u = sj / Lt, wide = u < 0.08 ? lerp(1.6, 3.1, u / 0.08) : lerp(3.1, 3.5, ss(0.08, 0.6, u)) * (u > 0.82 ? 1 - 0.25 * ss(0.82, 1, u) : 1);
-      const thin = (u < 0.06 ? lerp(1.2, 0.55, u / 0.06) : 0.55 * (1 - 0.6 * ss(0.85, 1, u))) * dome, wave = 0.22 * Math.sin(sj * 2.6) * ss(0.12, 0.35, u);
+      const u = sj / Lt, W0 = pig ? 0.75 : 1.6, W1 = pig ? 1.25 : 3.1, W2 = pig ? 1.5 : 3.5;
+      const wide = u < 0.08 ? lerp(W0, W1, u / 0.08) : lerp(W1, W2, ss(0.08, 0.6, u)) * (u > 0.82 ? 1 - 0.25 * ss(0.82, 1, u) : 1);
+      const thin = (u < 0.06 ? lerp(pig ? 0.85 : 1.2, pig ? 0.95 : 0.55, u / 0.06) : (pig ? 0.95 : 0.55) * (1 - 0.6 * ss(0.85, 1, u))) * dome, wave = (pig ? 0.3 : 0.22) * Math.sin(sj * (pig ? 3.4 : 2.6)) * ss(0.12, 0.35, u);
       for (let v = 0; v <= RAD; v++) {
         const i = j * (RAD + 1) + v; o.fromBufferAttribute(p, i).sub(c); const a = v / RAD * Math.PI * 2, edge = Math.abs(Math.cos(a));
         const tip = u > 0.7 ? 1 - 0.8 * ss(0.7, 1, u) * (0.5 + 0.5 * Math.sin(a * 5 + 1.3)) : 1;      // (the ends uneven: some locks longer)
@@ -1599,8 +1602,12 @@ function braidOf(F, spec, H, hm) {
   if (!loose) {
     const tb = Math.max(0, mid.findIndex((m, i) => i === mid.length - 1 || sTie < mid[i + 1])), tie = new THREE.Mesh(new THREE.TorusGeometry(0.24, 0.07, 8, 16), tmat(spec.ribbon || '#6a3a2a'));
     tie.position.copy(at(sTie)).sub(restL[tb]); tie.quaternion.setFromUnitVectors(new V3(0, 0, 1), curve.getTangentAt(sTie / Lt)); bones[tb].add(tie); ink(tie, 0.04);
+  } else if (pig) {      // (a pigtail's tie, where it's gathered at the head)
+    const sT = Math.min(Lt * 0.06, sPiv + 0.25), tie = new THREE.Mesh(new THREE.TorusGeometry(0.42, 0.11, 8, 18), tmat(spec.ribbon || '#f2f0ec'));
+    tie.position.copy(at(sT)).sub(restL[1]); tie.quaternion.setFromUnitVectors(new V3(0, 0, 1), curve.getTangentAt(sT / Lt)); bones[1].add(tie); ink(tie, 0.04);
   }
-  F.tail = { piv, bones, mesh, restL, X: restL.map(() => new V3()), Xp: restL.map(() => new V3()), W: restL.map(() => new V3()), live: false, sim: true, len: [] };
+  const T = { piv, bones, mesh, restL, X: restL.map(() => new V3()), Xp: restL.map(() => new V3()), W: restL.map(() => new V3()), live: false, sim: true, len: [] };
+  (F.tails = F.tails || []).push(T); if (!F.tail) F.tail = T;
 }
 // The plait's chain, a step: the top two joints held where the head has them, the rest falling (verlet, damped), each drawn back toward where
 // the head would have it by a stiffness that eases off down the plait, each kept its length from the one above, and out of the head and the
@@ -1609,8 +1616,8 @@ const _bq = new THREE.Quaternion(), _bq2 = new THREE.Quaternion(), _bv = new V3(
 // (the trunk's back, for the plait to lie on: per bone, over its length (y0–y1, in its own frame, unscaled metres), an ellipse across it,
 // half-width and half-depth about a middle zc: roughly the body's own, measured)
 const BRAID_BODY = [['chest', 0.0, 0.17, 0.135, 0.1, 0.025], ['spine', 0.0, 0.15, 0.12, 0.085, 0.025], ['hips', -0.06, 0.16, 0.15, 0.115, 0.0], ['neck', 0.0, 0.07, 0.06, 0.045, 0.0]];
-function tickBraid(F, dt) {
-  const T = F.tail, X = T.X, Xp = T.Xp, W = T.W, nb = X.length, s = F.root.scale.x;
+function tickBraid(F, T, dt) {
+  const X = T.X, Xp = T.Xp, W = T.W, nb = X.length, s = F.root.scale.x;
   F.root.updateMatrixWorld(true); T.piv.updateMatrixWorld(true);
   for (let i = 0; i < nb; i++) W[i].copy(T.restL[i]).applyMatrix4(T.piv.matrixWorld);
   if (!T.len.length) for (let i = 1; i < nb; i++) T.len[i] = W[i].distanceTo(W[i - 1]);
@@ -1729,7 +1736,7 @@ function tickFace(F, dt) {
     R.tuckS = (R.tuckS || 0) + ((F.tuck ? 1 : 0) - (R.tuckS || 0)) * (1 - Math.exp(-dt * 2.5));
     b.position.copy(F.rest0.sexS).addScaledVector(_tuckOff, R.tuckS / F.root.scale.x);
   }
-  if (F.tail && F.tail.sim) tickBraid(F, dt);
+  if (F.tails && F.tails.length) { for (const T of F.tails) if (T.sim) tickBraid(F, T, dt); }      // (Thorn: each tail its own chain)
   else if (F.tail) {
     const pv = F.tail.piv, q = new THREE.Quaternion(); pv.parent.getWorldQuaternion(q);
     const down = new V3(0, -1, 0).applyQuaternion(q.invert());
@@ -2098,11 +2105,91 @@ function makeGLB(spec, T) {
   finish(F, spec);
   return F;
 }
+// ── (Thorn) A short pleated skirt, made for whoever wears it from her own body as it's built (its shape keys and all): her outline round the
+// hips and thighs, height by height (her arms left out), hung from its fullest so it never clings in between her legs; eased off her, flaring
+// below the hips in knife pleats to its hem, high on the thigh; two bands of the accent round its hem. Its weights the pelvis's at the waist,
+// sharing more and more with the thigh on each side toward the hem. Raised, its front hangs as it did and its back is turned up over itself
+// onto the small of her back, the hem's bands uppermost. Coloured by its points (the pleats' folds darker), the material white.
+//   O.legs 'skirt': trousers (the cloth), legAccent (the bands), skirtLen (its length from the waist, metres)
+const SKIRT_NA = 72;
+function bodyOutline(F, y0, y1, dy) {
+  const B = F.model.mesh.Body.geo, P = B.attributes.position, M = B.morphAttributes.position || [], keys = B.userData.keys || {}, SI = B.attributes.skinIndex, SW = B.attributes.skinWeight;
+  const inf = []; for (const k in keys) inf[keys[k]] = F.keys[k] || 0;
+  const nr = Math.round((y1 - y0) / dy) + 1, R = Array.from({ length: nr }, () => new Float32Array(SKIRT_NA)), v = new V3();
+  let zc = 0, zn = 0;
+  const pts = [];
+  for (let i = 0; i < P.count; i++) {
+    let dom = 0, dw = -1; for (let q = 0; q < 4; q++) if (SW.array[i * 4 + q] > dw) { dw = SW.array[i * 4 + q]; dom = SI.array[i * 4 + q]; }
+    if (ARM_BONES.test(F.bones[dom].name)) continue;
+    v.fromBufferAttribute(P, i); M.forEach((A, m) => { if (inf[m]) { v.x += A.getX(i) * inf[m]; v.y += A.getY(i) * inf[m]; v.z += A.getZ(i) * inf[m]; } });
+    if (v.y < y0 - dy || v.y > y1 + dy) continue; pts.push(v.x, v.y, v.z);
+    if (Math.abs(v.y - F.L.hip) < 0.02 && Math.abs(v.x) < 0.04) { zc += v.z; zn++; }
+  }
+  zc = zn ? zc / zn : 0;
+  for (let i = 0; i < pts.length; i += 3) {
+    const x = pts[i], y = pts[i + 1], z = pts[i + 2] - zc, r = Math.hypot(x, z), a = Math.atan2(x, z), b = ((Math.round(a / (2 * Math.PI) * SKIRT_NA) % SKIRT_NA) + SKIRT_NA) % SKIRT_NA;
+    for (let j = Math.max(0, Math.floor((y - y0) / dy - 0.6)); j <= Math.min(nr - 1, Math.ceil((y - y0) / dy + 0.6)); j++) if (r > R[j][b]) R[j][b] = r;
+  }
+  for (const row of R) {      // (any bin with nothing in it, from its neighbours; then a little smoothing round)
+    for (let k = 0; k < SKIRT_NA; k++) if (!row[k]) { let a = 1, b = 1; while (!row[(k - a + SKIRT_NA) % SKIRT_NA] && a < SKIRT_NA) a++; while (!row[(k + b) % SKIRT_NA] && b < SKIRT_NA) b++; row[k] = (row[(k - a + SKIRT_NA) % SKIRT_NA] * b + row[(k + b) % SKIRT_NA] * a) / (a + b); }
+    const c = row.slice(); for (let k = 0; k < SKIRT_NA; k++) row[k] = (c[(k + SKIRT_NA - 1) % SKIRT_NA] + 2 * c[k] + c[(k + 1) % SKIRT_NA]) / 4;
+  }
+  return { R, y0, dy, zc, at: (j, k) => R[Math.max(0, Math.min(nr - 1, j))][((k % SKIRT_NA) + SKIRT_NA) % SKIRT_NA] };
+}
+function skirtGeo(F, up) {
+  const L = F.L, O = outfitOf(F.spec), dy = 0.01, yw = L.trouserTop - 0.006, len = O.skirtLen || 0.3, yh = yw - len, ypk = L.seatPeak || L.hip;
+  const lift = len * 0.5, OL = bodyOutline(F, yh - 0.02, yw + lift + 0.04, dy), NR = Math.round(len / dy) + 1;
+  const bi = n => F.bones.findIndex(b => b.name === n), HIPS = bi('hips'), TL = bi('thighL'), TR = bi('thighR'), SP = bi('spine');
+  const main = srgb(O.trousers || '#2c4aa8'), band = srgb(O.legAccent || '#ffffff');
+  // (the radius worn, at row r (0 the waist) round the bin k: the fullest of her from the waist down to there, eased, flaring below the
+  // hips, the pleats' folds round it)
+  const full = []; for (let r = 0; r < NR; r++) { const row = new Float32Array(SKIRT_NA); for (let k = 0; k < SKIRT_NA; k++) { const j = Math.round((yw - r * dy - OL.y0) / dy); row[k] = Math.max(r ? full[r - 1][k] : 0, OL.at(j, k)); } full.push(row); }
+  const PLEATS = 40, saw = a => { const t = a / (2 * Math.PI) * PLEATS; return t - Math.floor(t) - 0.5; };
+  const K = k => ((k % SKIRT_NA) + SKIRT_NA) % SKIRT_NA;
+  const worn = (r, k) => { k = K(k); const y = yw - r * dy, a = k / SKIRT_NA * 2 * Math.PI, below = Math.max(0, ypk + 0.02 - y), amp = 0.008 * ss(ypk + 0.02, ypk - 0.06, y);
+    return { y, rad: full[r][k] + 0.012 + 0.2 * below + amp * saw(a), fold: amp > 0 ? Math.abs(saw(a)) : 0 }; };
+  // (raised, the back's row r: up from the waist over the small of her back, against her, turned up)
+  const turned = (r, k) => { k = K(k); const u = r / (NR - 1), y = yw + lift * u, j = Math.round((y - OL.y0) / dy), a = k / SKIRT_NA * 2 * Math.PI, amp = 0.006 * ss(0.2, 0.6, u);
+    return { y, rad: Math.max(OL.at(j, k), full[0][k]) + 0.016 + 0.02 * u + amp * saw(a), fold: amp > 0 ? Math.abs(saw(a)) : 0 }; };
+  const pos = [], col = [], si = [], sw = [], reg = [], idx = [];
+  const vert = (rad, a, y, u, fold, wts) => {
+    pos.push(Math.sin(a) * rad, y, OL.zc + Math.cos(a) * rad);
+    const b = (u > 0.86 && u < 0.895) || (u > 0.925 && u < 0.96), c = b ? band : main, d = 1 - 0.35 * fold;
+    col.push(c.r * d, c.g * d, c.b * d); reg.push(0);
+    const w = wts.slice(0, 4); while (w.length < 4) w.push([HIPS, 0]); for (const [b2, ww] of w) { si.push(b2); sw.push(ww); }
+  };
+  const wornW = (y, x) => { const h = 0.55 * ss(ypk, yh, y), sd = ss(-0.05, 0.05, x); return [[HIPS, 1 - h], [TL, h * sd], [TR, h * (1 - sd)]]; };
+  const turnW = y => { const g = 0.6 * ss(yw, yw + lift, y); return [[HIPS, 1 - g], [SP, g]]; };
+  // (a sheet over the bins k0..k1, rows 0..NR-1, from `at`)
+  const sheet = (k0, k1, at, wts) => {
+    const base = pos.length / 3, nk = k1 - k0 + 1;
+    for (let r = 0; r < NR; r++) for (let k = k0; k <= k1; k++) { const P_ = at(r, k), a = K(k) / SKIRT_NA * 2 * Math.PI; vert(P_.rad, a, P_.y, r / (NR - 1), P_.fold, wts(P_.y, Math.sin(a))); }      // (the same point where a sheet closes on itself, so its outline welds)
+    for (let r = 0; r < NR - 1; r++) for (let q = 0; q < nk - 1; q++) { const a = base + r * nk + q, b = a + 1, c = a + nk, d = c + 1; idx.push(a, c, b, b, c, d); }
+  };
+  if (!up) sheet(SKIRT_NA / 2, SKIRT_NA * 1.5, worn, wornW);      // (all the way round from the back: the last column the first again, so it closes there)
+  else {
+    const q = SKIRT_NA / 4, f0 = -Math.round(q * 1.15), f1 = Math.round(q * 1.15);      // (the front: a little past each side)
+    sheet(f0, f1, worn, wornW); sheet(f1, SKIRT_NA + f0, turned, y => turnW(y));
+  }
+  const g = new THREE.BufferGeometry();
+  g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); g.setAttribute('color', new THREE.Float32BufferAttribute(col, 3)); g.setAttribute('region', new THREE.Float32BufferAttribute(reg, 1));
+  g.setAttribute('skinIndex', new THREE.Uint16BufferAttribute(si, 4)); g.setAttribute('skinWeight', new THREE.Float32BufferAttribute(sw, 4)); g.setIndex(idx); g.computeVertexNormals();
+  // (its outside outward)
+  const n = g.attributes.normal, p = g.attributes.position; let out = 0; for (let i = 0; i < p.count; i++) out += n.getX(i) * p.getX(i) + n.getZ(i) * (p.getZ(i) - OL.zc);
+  if (out < 0) { for (let i = 0; i < idx.length; i += 3) { const t = idx[i + 1]; idx[i + 1] = idx[i + 2]; idx[i + 2] = t; } g.setIndex(idx); g.computeVertexNormals(); }
+  g.userData = { shared: false }; return g;
+}
+function skirtMesh(F, up) {
+  const geo = skirtGeo(F, up), m = tmat('#ffffff', { skin: true, side: THREE.DoubleSide, vc: true, rim: '#2a3440', rimK: 0.5, unique: true });
+  m.polygonOffset = true; m.polygonOffsetFactor = 1; m.polygonOffsetUnits = 2;
+  const sm = skinned(F, geo, m); sm.castShadow = true; sm.receiveShadow = false; ink(sm, INK_W, F, null, HEM_R); return sm;
+}
 function garmentGLB(F, name) {
   if (F.gm[name]) return F.gm[name];
+  if (/^Skirt/.test(name)) return (F.gm[name] = skirtMesh(F, name === 'SkirtUp'));      // (Thorn: made for her, below)
   const spec = F.spec, O = outfitOf(spec), L = F.L, uni = spec.outfit === 'uniform' ? 1 : 0;
   let geo = F.model.mesh[name].geo;
-  if (/^(Tunic|Shirt)/.test(name) && O.top === 'tank') geo = sleeveless(geo, L);      // (Thorn: a tank top: the shirt cut down to one)
+  if (/^(Tunic|Shirt)/.test(name) && O.top === 'tank') geo = sleeveless(geo, L, O.legs === 'skirt');      // (Thorn: a tank top: the shirt cut down to one; tucked into a skirt)
   let m;
   if (/^NightShirt/.test(name)) {      // (Fenwick: his nightshirt, undyed linen, a shift: drawn as her chemise is)
     m = tmat(NIGHT_M, { skin: true, morph: true, side: THREE.DoubleSide, rim: '#3a3028', rimK: 0.55, pattern: 'dressG', bindAttr: true, unique: true }); const U = m.userData.u;
@@ -2227,11 +2314,12 @@ function clipGeo(geo, field) {
 }
 // (Thorn: a top as built, cut into a tank top: without its sleeves (their triangles marked as sleeve, region 1); its armholes cut from the
 // armpit up to a strap over each shoulder; a scoop at the front of the neck and a shallower one behind)
-function sleeveless(geo, L) {
+function sleeveless(geo, L, tuck) {
   const reg = geo.attributes.region;
-  const nl = L.neckline, pit = L.armpit, shX = L.shX, top = L.shoulder + 0.04, SW = 0.062;
+  const nl = L.neckline, pit = L.armpit, shX = L.shX, top = L.shoulder + 0.04, SW = 0.062, tY = L.trouserTop + 0.004;
   return clipGeo(geo, (p, i) => {
     if (reg && reg.getX(i) > 0.5) return -0.02;      // (the sleeves: off)
+    if (tuck && p.y < tY + 0.004) return p.y - tY;      // (tucked in: nothing of it below the waistband)
     const ax = Math.abs(p.x), y = p.y, back = 0.022 * ss(0.01, -0.03, p.z);      // (cut a little further in behind, inside where the sleeve was)
     const arm = y < pit - 0.035 ? 1 : (shX - 0.026 - back - (shX - 0.026 - 0.104) * clamp((y - pit + 0.035) / (top - pit + 0.035), 0, 1)) - ax;      // (inside the armhole's edge)
     const front = ss(-0.02, 0.03, p.z), depth = lerp(0.03, 0.085, front), line = nl - 0.006 - depth * Math.max(0, 1 - (ax / SW) ** 2);
@@ -2780,15 +2868,20 @@ function dressGLB(F) {
     return;
   }
   const st = F.state, O = outfitOf(F.spec), longS = F.spec.outfit !== 'offduty' || O.sleeves === 'long', tops = longS ? ['Tunic', 'TunicUp'] : ['Shirt', 'ShirtUp'];
-  const want = { top: tops[st.top === 'up' ? 1 : 0], bottoms: st.bottoms === 'down' ? 'TrousersDown' : 'Trousers', under: st.under === 'down' ? 'BriefsDown' : 'Briefs', boots: 'Boots' };
+  const skirt = O.legs === 'skirt';      // (Thorn: a skirt for her bottoms: worn ('up'), or raised ('down'), the back of it turned up)
+  const want = { top: tops[st.top === 'up' ? 1 : 0], bottoms: skirt ? (st.bottoms === 'down' ? 'SkirtUp' : 'Skirt') : st.bottoms === 'down' ? 'TrousersDown' : 'Trousers', under: st.under === 'down' ? 'BriefsDown' : 'Briefs', boots: 'Boots' };
   const on = new Set(Object.values(want));
   for (const k of Object.values(want)) garmentGLB(F, k);
   for (const k in F.gm) { const m = F.gm[k], v = on.has(k); m.visible = v; if (m.userData.hull) m.userData.hull.visible = v; }
-  F.clothes = { top: F.gm[want.top], bottoms: F.gm[want.bottoms], under: F.gm[want.under] }; F.bootL = F.bootR = F.gm.Boots; F.layers = ['top', 'bottoms', 'under']; F.skirt = null;
+  F.clothes = { top: F.gm[want.top], bottoms: F.gm[want.bottoms], under: F.gm[want.under] }; F.bootL = F.bootR = F.gm.Boots; F.layers = ['top', 'bottoms', 'under'];
+  F.skirt = skirt ? 'short' : null; F.skirtKey = skirt ? 'bottoms' : null;      // (js/session.js: raised from its hem, not lowered)
+  // (Thorn: socks, drawn on the legs to their tops, where she wears them with her boots)
+  const sock = O.socks ? srgb(O.socks) : null; F.skinMat.userData.u.uStock.value.set(sock ? sock.r : 0, sock ? sock.g : 0, sock ? sock.b : 0, sock ? O.socksTop || 0.3 : 0);
   // the skin under each garment hidden (so nothing pokes through as they move)
   let hide = 1 << R.FOOT; const H = r => { hide |= 1 << r; };
   if (O.top !== 'tank') { H(R.CHEST); H(R.UPARM); } H(R.WAIST_HI); if (longS) H(R.FOREARM); if (st.top !== 'up') H(R.WAIST);      // (Thorn: bare arms in a sleeveless top)
-  if (st.bottoms !== 'down') { H(R.HIPS); H(R.HIPS_LO); H(R.SEAT); H(R.THIGH); H(R.KNEE); H(R.SHIN); } else H(R.SHIN);
+  if (skirt) { if (st.bottoms !== 'down') H(R.WAIST); }      // (a skirt stands off her legs: they stay; only its waistband hides)
+  else if (st.bottoms !== 'down') { H(R.HIPS); H(R.HIPS_LO); H(R.SEAT); H(R.THIGH); H(R.KNEE); H(R.SHIN); } else H(R.SHIN);
   if (st.under !== 'down') { H(R.SEAT); H(R.HIPS_LO); }
   F.skinMat.userData.u.uHide.value = hide;
   if (F.spot) for (const k of SPOTS) F.mark(k, 0);      // (the briefs' copy of the marks)

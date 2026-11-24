@@ -91,6 +91,26 @@ const ROSTER = {
     look: { skin: '#f3d8c6', hair: '#6a523e', hairStyle: 'braid', hairCap: 'swept', braidKind: 'loose', braidLen: 6.2, eyes: '#7d93a6', lips: '#c48a86', freckles: 0.8 },
     dynamic: { romance: true, bond: 0.3 }, word: 'Curtain', base: 'defiant',
   },
+  // ── Saskia (Thorn's own: docs/lore.md) ──
+  saskia: {
+    id: 'saskia', name: 'Saskia', short: 'Saskia', title: 'Saskia', age: 22, role: 'A musical theatre student, Niamh’s friend; asked James to help her work',
+    about: {
+      names: 'Saskia. Sas, to Niamh.',
+      flaw: 'Coasting on talent and charm: practice left till the night before, warm-ups skipped, out late before a show, the work talked her way out of; then the panic, in the wings.',
+      history: 'On the same course as Niamh and in the society’s shows; in rehearsal now for its cheer-squad musical. When Niamh started turning up on time, off book and calmer, Saskia asked her what technique she’d found.',
+      temperament: 'Bubbly, sunny, confident in a room; competitive; charming enough to get away with most things, and quietly afraid she isn’t as good as everyone thinks.',
+      resistance: 'Charm and excuses: she bargains, jokes, promises, tries to talk her way out of it, and sulks when it doesn’t work. What she’s corrected for is doing the work.',
+      terms: 'He met her to talk through her goals and how he works, and the two of them agreed to work together, on terms, with her word.',
+    },
+    agreed: { reasons: ['habits', 'behaviour'],
+      story: 'She saw how much Niamh had changed and asked if she’d found a new study or performance technique. Niamh told her about James. He met Saskia to talk through her goals and his methods, and the two of them agreed to work together.' },
+    feelings: { rate: 0.9, text: 'She came for results. She’s finding she likes being taken seriously, and the man who does it.' },
+    resist: { style: 'charm', overt: 0.35, covert: 0.5 }, meters: { wilfulness: 0.45, compliance: 0.4, mindfulness: 0.35 },
+    pain: { tolerance: 0.42, resilience: 0.6 },
+    body: { type: 'athletic, a dancer, average height', h: { f: 1.66 }, mass: 0.5, fat: 0.42, bust: 0.6, response: 1 },
+    look: { skin: '#f4d8c4', hair: '#e8d6a2', hairStyle: 'braid', hairCap: 'swept', braidKind: 'pigtails', braidLen: 3.6, ribbon: '#f2f0ec', eyes: '#7a8ea0', lips: '#c8888a' },
+    dynamic: { romance: true, bond: 0.3 }, word: 'Blackout', base: 'smile',
+  },
 };
 const IDS = Object.keys(ROSTER);
 
@@ -110,6 +130,14 @@ const WARDROBE = {
       under: '#c8d8e8', shoes: 'soft', shoe: '#b8323a', sole: '#5a2a2a', trim: '#5a2a2a', sock: '#ece4da' },
     work: { top: 'henley', sleeves: 'rolled', tunic: '#5a6a4a', shirt: '#e8dcc4', trousers: '#c8b896', legs: 'chinos', legAccent: '#8a7a5a',
       under: '#f2ece4', shoes: 'work', shoe: '#5a3e2a', sole: '#2a2018', trim: '#c8a46a', sock: '#6a5a4a' },
+  },
+  saskia: {
+    costume: { top: 'tank', sleeves: 'rolled', tunic: '#f2f0ec', shirt: '#f2f0ec', accent: '#f2f0ec', trousers: '#2a48b0', legs: 'skirt', legAccent: '#f6f6f4', skirtLen: 0.32,
+      under: '#f2f0ee', shoes: 'boots', shoe: '#7a7468', socks: '#f4f2ee', socksTop: 0.31 },
+    casual: { top: 'tee', sleeves: 'rolled', tunic: '#e6a8b6', shirt: '#e6a8b6', print: '#e6a8b6', accent: '#e6a8b6', trousers: '#6a86b0', legs: 'jeans', legAccent: '#d8a04a',
+      under: '#f2e4e8', shoes: 'sneakers', shoe: '#f4f2ee', sole: '#e8e4dc', trim: '#e6a8b6', sock: '#f4f2ee' },
+    cosy: { top: 'thermal', sleeves: 'long', tunic: '#b8bcc4', shirt: '#b8bcc4', accent: '#e6a8b6', trousers: '#4a4e5a', legs: 'joggers', legAccent: '#e6a8b6',
+      under: '#e4e8f0', shoes: 'soft', shoe: '#e6a8b6', sole: '#8a5a68', trim: '#8a5a68', sock: '#f0ebe4' },
   },
   niamh: {
     rehearsal: { top: 'tank', sleeves: 'rolled', tunic: '#1c1c20', shirt: '#1c1c20', accent: '#1c1c20', trousers: '#18181c', legs: 'leggings', legAccent: '#18181c',
@@ -131,7 +159,7 @@ const WARDROBE = {
 // (a line about each, for the set-up)
 const OUTFIT_NOTES = {
   jeans: 'a plain pink tee, jeans, trainers', cardigan: 'her red cardigan over a shirt, jeans, flats', lounge: 'a marl top and joggers, slippers', work: 'from the bakery: a henley, chinos, work shoes',
-  rehearsal: 'rehearsal blacks: a sleeveless top, leggings, jazz shoes', casual: 'a sage tee, jeans, trainers', cosy: 'a cream cardigan over a white top, leggings, slippers',
+  costume: 'her show costume: a white tank top, a blue pleated skirt, white socks, suede boots', rehearsal: 'rehearsal blacks: a sleeveless top, leggings, jazz shoes', casual: 'a sage tee, jeans, trainers', cosy: 'a cream cardigan over a white top, leggings, slippers',
   office: 'a sage cardigan over a blouse, smart trousers, flats', weekend: 'a print shirt open over a tee, jeans, trainers', home: 'a soft lilac top and joggers, slippers',
   tee: 'a plain maroon T-shirt, jeans, boots', henley: 'a henley, sleeves pushed up, jeans, boots', flannel: 'a check flannel shirt open over a tee, work trousers, boots', knit: 'a cardigan over a shirt, chinos, loafers',
 };
@@ -209,7 +237,7 @@ function grow(id, rel, r) {
   return { rel: out, delta };
 }
 // Voice pitch for the babble and cries (Hz).
-const PITCH = { james: 116, rose: 210, bethan: 200, niamh: 218 };
+const PITCH = { james: 116, rose: 210, bethan: 200, niamh: 218, saskia: 224 };
 const pitch = id => PITCH[id] || 208;
 
 const api = { METERS, REASONS, ROSTER, IDS, SQUIRE, WARDROBE, OUTFIT_NOTES, outfits, squireOutfits, pronouns, figureSpec, squireSpec, pitch, wriggle, grow };

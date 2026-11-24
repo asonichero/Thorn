@@ -3,13 +3,14 @@
 const test = require('node:test'), assert = require('node:assert/strict');
 globalThis.window = globalThis;
 const Cast = require('../js/cast.js');
-const TOPS = ['henley', 'thermal', 'open', 'waistcoat', 'cardigan', 'tee', 'sweatervest', 'plaid', 'tank'], LEGS = ['canvas', 'joggers', 'chinos', 'work', 'combat', 'pressed', 'jeans', 'leggings'];
+const TOPS = ['henley', 'thermal', 'open', 'waistcoat', 'cardigan', 'tee', 'sweatervest', 'plaid', 'tank'], LEGS = ['canvas', 'joggers', 'chinos', 'work', 'combat', 'pressed', 'jeans', 'leggings', 'skirt'];
 const SHOES = ['boots', 'soft', 'deck', 'work', 'sneakers', 'flats', 'loafers'];
 
 test('Rose and James, adults both: her body, her word and how she takes it, as Fenwick has them; his name and his own look', () => {
-  assert.deepEqual(Cast.IDS, ['rose', 'bethan', 'niamh']);
+  assert.deepEqual(Cast.IDS, ['rose', 'bethan', 'niamh', 'saskia']);
   for (const id of Cast.IDS) { const X = Cast.ROSTER[id]; assert.ok(X.age >= 18, id + ' a grown-up'); assert.ok(X.word && X.pain.tolerance > 0 && X.body.h.f > 1.5, id);
     assert.ok(X.agreed.reasons.every(k => Cast.REASONS[k]) && X.agreed.story && X.feelings.text, id + ': why she asked, and how she feels'); assert.ok(Cast.outfits(id).length >= 3, id + ' outfits'); }
+  const S = Cast.ROSTER.saskia; assert.ok(S.age >= 21, 'a student, grown'); assert.match(S.agreed.story, /Niamh/); assert.equal(S.look.braidKind, 'pigtails'); assert.equal(Cast.WARDROBE.saskia.costume.legs, 'skirt');
   const N = Cast.ROSTER.niamh; assert.ok(N.age >= 18 && N.age <= 23, 'a student, grown'); assert.match(N.agreed.story, /Rose and Bethan/); assert.equal(N.look.braidKind, 'loose');
   assert.equal(Cast.WARDROBE.niamh.rehearsal.top, 'tank'); assert.equal(Cast.WARDROBE.niamh.rehearsal.legs, 'leggings');
   const B = Cast.ROSTER.bethan; assert.ok(B.age >= 24 && B.age <= 27, 'mid-twenties'); assert.ok(B.agreed.reasons.includes('release')); assert.match(B.agreed.story, /Will/);

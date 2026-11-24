@@ -127,3 +127,19 @@ test('Bethan, in her office clothes: placed across his knee, run till she gives 
   ses.aftercare('bethan'); step(5); assert.equal(ses.st.phase, 'after');
   await wait(1700);
 });
+
+test('Saskia’s show costume: a skirt made for her, raised (its back turned up) not lowered; pigtails, each its own chain; a correction run through', async () => {
+  await loaded;
+  const f = Figure.make(Cast.figureSpec('saskia', 'f', 'costume'));
+  assert.equal(f.skirt, 'short'); assert.equal(f.skirtKey, 'bottoms'); assert.ok(f.gm.Skirt.visible); assert.ok(f.tails && f.tails.length === 2, 'two pigtails');
+  f.setClothes({ bottoms: 'down' }); assert.ok(f.gm.SkirtUp.visible && !f.gm.Skirt.visible, 'raised');
+  const w = f.gm.Skirt.geometry, sw = w.attributes.skinWeight;
+  for (let i = 0; i < sw.count; i++) assert.ok(Math.abs(sw.getX(i) + sw.getY(i) + sw.getZ(i) + sw.getW(i) - 1) < 1e-4, 'its weights sum to one');
+  const { ses, ev, step } = setup('otk', {}, 'saskia', 'costume');
+  ses.dress({ bottoms: 'down' }); step(120); assert.equal(ses.current.f.state.bottoms, 'down'); assert.ok(ses.current.f.gm.SkirtUp.visible);
+  ses.set({ pace: 2, strength: 1.25 });
+  for (let i = 0; i < 150 && !(ses.receptive && ses.distress() > 1); i++) { if (ses.covering) ses.tell(); if (!ses.st.running && !ses.busy) ses.run(true); step(10); }
+  ses.run(false); step(5); ses.endTurn(); step(200); await wait(1000); step(2);
+  assert.equal(ev.find(e => e[0] === 'turnEnd')[1].outcome, 'done'); assert.equal(ses.current.f.state.bottoms, 'up', 'her skirt let down again');
+  await wait(1700);
+});

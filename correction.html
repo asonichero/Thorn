@@ -67,7 +67,7 @@ kbd { font: 10px ui-monospace, monospace; color: var(--dim); }
 
 <div id="panel" class="box">
   <h1>Correction test</h1>
-  <p class="sub">The living room, at night. You’re James. Rose, Bethan and Niamh are people in your life who trust you, and each has asked you, on terms you agreed, to hold her to account. One whole correction: placed, run as you judge it, ended, then the aftercare. If it goes too far she says her word, and it stops at once.</p>
+  <p class="sub">The living room, at night. You’re James. Rose, Bethan, Niamh and Saskia are people in your life who trust you, and each has asked you, on terms you agreed, to hold her to account. One whole correction: placed, run as you judge it, ended, then the aftercare. If it goes too far she says her word, and it stops at once.</p>
   <h2>Who</h2><select id="who"></select><div id="her" style="margin-top:6px"></div>
   <h2>Outfit</h2><div class="row" id="outfit"></div>
   <h2>Clothes</h2><div class="row"><button id="pTop"></button><button id="pBot"></button><button id="pUnd"></button></div>
@@ -267,7 +267,7 @@ const play = (steps, id, P, r) => Talk.play(steps, {
 // ── The panel ──
 const seg = (id, items, cur, fn) => { const el = $(id); el.innerHTML = ''; for (const [v, label, title] of items) { const b = document.createElement('button'); b.textContent = label; if (title) b.title = title; b.className = v === cur ? 'on' : ''; b.onclick = () => fn(v); el.append(b); } };
 for (const id of Cast.IDS) { const r = Cast.ROSTER[id], o = document.createElement('option'); o.value = id; o.textContent = `${r.name}, ${r.age}`; $('who').append(o); }
-const drawHer = () => { $('who').value = ID; $('her').innerHTML = `<small>${R.role}</small><small>${R.about.temperament.split('. ')[0]}.</small>`
+const drawHer = () => { $('who').value = ID; $('her').innerHTML = `<small>${R.role}</small><small>${R.about.temperament.split('. ')[0].replace(/\.$/, '')}.</small>`
   + `<small>Why she asked you: ${R.agreed.reasons.map(k => Cast.REASONS[k]).join(', and ')}.</small><small>Her word: <b style="font-size:12px">${R.word}</b></small>`; };
 drawHer();
 $('who').onchange = () => { setWho($('who').value); save(); drawHer(); relSliders(); audioOn(); models.then(begin); };
@@ -305,7 +305,7 @@ const LEG_NAME = { jeans: 'Jeans', joggers: 'Joggers', chinos: 'Chinos', work: '
 function clothesLabels() {
   if (cfg.outfit === 'none') return ['Nothing on', 'Nothing on', 'Nothing on', true];
   const O = Cast.WARDROBE[ID][cfg.outfit], s = live() || (ses && ses.current && ses.st.phase === 'closing') ? ses.current.f.state : { top: cfg.clothes[0], bottoms: cfg.clothes[1], under: cfg.clothes[2] };
-  return [`${TOP_NAME[O.top] || 'Top'}: ${s.top === 'up' ? 'raised' : 'down'}`, `${LEG_NAME[O.legs] || 'Trousers'}: ${s.bottoms === 'down' ? 'lowered' : 'up'}`, `Knickers: ${s.under === 'down' ? 'lowered' : 'up'}`, false];
+  return [`${TOP_NAME[O.top] || 'Top'}: ${s.top === 'up' ? 'raised' : 'down'}`, O.legs === 'skirt' ? `Skirt: ${s.bottoms === 'down' ? 'raised' : 'down'}` : `${LEG_NAME[O.legs] || 'Trousers'}: ${s.bottoms === 'down' ? 'lowered' : 'up'}`, `Knickers: ${s.under === 'down' ? 'lowered' : 'up'}`, false];
 }
 const NOTES = { otk: 'The dining chair, pulled out into the room. She lies across his lap, her hands to the floor.', 'otk:sofa': 'Perched on the front of the sofa. She lies along it, her near arm up on the seat. The coffee table’s pushed back for it.',
   table: 'At the end of the dining table, bent over it, holding its sides; James at her left. The paddle and the belt are for here.', wall: 'At the kitchen’s worktop, palms flat on it, bent forward; James at her left.' };

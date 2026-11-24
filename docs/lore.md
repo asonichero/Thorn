@@ -77,3 +77,17 @@ Her word is **Curtain**, like at the end of the show. She admired him first, for
 In a correction she argues out loud: it's unfair, he's being dramatic, she was about to learn it. She looks back at him, and her pride holds until it doesn't.
 
 *Her look follows the AI-generated reference images supplied for her: long, loose, wavy honey-brown hair with darker roots, worn half-up; grey-blue eyes; freckles; fair skin; a slim, toned dancer's build. Her outfits are rehearsal blacks (a tank top, high-waisted leggings, jazz shoes), a sage tee with jeans and trainers, and a cream cardigan over a white top with leggings.*
+
+## Saskia
+
+Saskia, Sas to Niamh, is 22. She's on the same musical theatre course as Niamh and in the society's shows, and is in rehearsal now for its cheer-squad musical. She's bubbly, sunny and confident in a room; competitive; charming enough to get away with most things, and quietly afraid she isn't as good as everyone thinks.
+
+She coasts on talent and charm. She leaves practice until the night before, skips warm-ups, goes out the night before a show, and talks her way out of the work. Then comes the panic, in the wings.
+
+When Niamh started turning up on time, off book and calmer, Saskia asked her whether she'd found some new study or performance technique. Niamh told her about James. He met Saskia to talk through her goals and his methods, and the two of them agreed to work together. That makes her reasons **habits** and **behaviour**: he holds her to practice, warm-ups, and early nights before a show.
+
+Her word is **Blackout**: end of scene, lights out. She came for results, and she's finding she likes being taken seriously, and the man who does it.
+
+In a correction she meets it with charm and excuses: she bargains, jokes, promises, tries to talk her way out of it, and sulks when it doesn't work.
+
+*Her look follows the reference images supplied for her: pale blonde hair in two high pigtails, blue-grey eyes, fair skin, a dancer's build. Her show costume is a white tank top tucked into a royal-blue pleated skirt with white bands at the hem, white socks and grey suede boots. She also has a pink tee with jeans, and a grey top with joggers.*

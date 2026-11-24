@@ -42,6 +42,7 @@ test('her terms: she asks him and says why; his terms, that nothing is owed; her
   }
   assert.ok(Lines.terms('bethan').some(s => /Will/.test(s.text)), 'Will knows, and said she should ask');
   assert.ok(Lines.terms('niamh').some(s => s.who === 'captain' && /Rose/.test(s.text) && /Bethan/.test(s.text)), 'he tells Niamh about Rose and Bethan');
+  assert.match(Lines.terms('saskia')[0].text, /Niamh/, 'Saskia came by way of Niamh');
 });
 
 test('the aftercare warmer once her feelings for him are strong: a fond opening and close', () => {
