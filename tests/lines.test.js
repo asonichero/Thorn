@@ -34,11 +34,14 @@ test('the aftercare: her opening by how it ended, three ways to answer her, then
 test('her terms: she asks him and says why; his terms, that nothing is owed; her agreement, and her word', () => {
   for (const id of window.Cast.IDS) {
     const steps = Lines.terms(id), last = steps[steps.length - 1], word = window.Cast.ROSTER[id].word;
-    assert.equal(steps[0].who, 'subject', id + ' asks'); assert.ok(steps.some(s => s.who === 'captain' && /owe/.test(s.text)), 'none of it owed');
+    // (she asks; or, Niamh, he offers it once she's said the talking isn't working, and she chooses it)
+    if (id === 'niamh') assert.equal(steps[1].who, 'subject'); else assert.equal(steps[0].who, 'subject', id + ' asks');
+    assert.ok(steps.some(s => s.who === 'captain' && /owe/.test(s.text)), 'none of it owed');
     assert.ok(steps.length >= 6); assert.equal(last.who, 'captain'); assert.ok(last.text.includes(word));
     assert.ok(steps.some(s => s.who === 'subject' && s.text.includes(word)), id + ' gives it');
   }
   assert.ok(Lines.terms('bethan').some(s => /Will/.test(s.text)), 'Will knows, and said she should ask');
+  assert.ok(Lines.terms('niamh').some(s => s.who === 'captain' && /Rose/.test(s.text) && /Bethan/.test(s.text)), 'he tells Niamh about Rose and Bethan');
 });
 
 test('the aftercare warmer once her feelings for him are strong: a fond opening and close', () => {

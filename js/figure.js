@@ -175,6 +175,11 @@ PATTERNS.tunicG = `{
         diffuseColor.rgb = mix(diffuseColor.rgb, uPat0 * (0.9 + 0.2 * fn3(b * 180.0)), max(max(sband, tail), knot));
         diffuseColor.rgb *= 1.0 - 0.35 * fr * max(seamAt(length(vec2(b.x - 0.012, b.y - collar + 0.045)) - 0.0135, 0.003), seamAt(b.y - collar + 0.0375, 0.003));
       }
+    } else if (st > 8.5) {
+      // (Thorn) a fitted sleeveless top, a dancer's (its sleeves taken off the shirt as it's made: garmentGLB): plain, a fine rib across it,
+      // the neck and the armholes bound in a band of the same
+      diffuseColor.rgb *= 0.94 + 0.08 * (0.5 + 0.5 * sin(uv.x * 1400.0));
+      if (sl < 0.5) diffuseColor.rgb *= 1.0 - 0.25 * max(smoothstep(nl - 0.03, nl - 0.022, b.y) * fr, smoothstep(shX - 0.06, shX - 0.04, ax) * step(pit - 0.04, b.y));
     } else {
       // (Thorn) a check flannel shirt, worn open over a tee: broad bands of the dark (uPat2) across and down the shirt's own colour, darkest where
       // they cross, a fine thread of the accent (uPat0) beside each; brushed, so a soft grain over it all. Open down the front between its edges
@@ -252,6 +257,10 @@ PATTERNS.trousersG = `{
       } else if (st < 5.5) {
         line = max(fr, bk) * seamAt(dx, 0.0028) * step(hemY + 0.005, b.y) * step(b.y, top - 0.08);
         diffuseColor.rgb *= 1.0 + 0.18 * max(fr, bk) * seamAt(dx - 0.003, 0.004) * step(hemY + 0.005, b.y) * step(b.y, top - 0.08);
+      } else if (st > 6.5) {
+        // (Thorn) leggings: plain and close, a faint sheen down the front of the thighs, a high waistband and its seam
+        diffuseColor.rgb *= 1.0 + 0.16 * fr * (1.0 - smoothstep(0.01, 0.06, abs(dx))) * smoothstep(knee - 0.05, knee + 0.25, b.y);
+        line = max(line, seamAt(b.y - top + 0.085, 0.0035) * 0.8);
       } else {
         // (Thorn) jeans: faded where they're worn, at the front of the thighs and over the knees, and the stitching in the accent, dashed
         float th = fr * (1.0 - smoothstep(0.015, 0.07, abs(dx))), fd = th * (0.7 * exp(-pow((b.y - knee - 0.2) / 0.13, 2.0)) + 0.5 * exp(-pow((b.y - knee) / 0.05, 2.0)));
@@ -1228,7 +1237,7 @@ const OUTFITS = {
 };
 // Off duty, a heroine wears their own (spec.off, from Cast: offduty), over Silas's as the default; which top, legs and shoes, as the
 // patterns number them.
-const TOPS = { henley: 0, thermal: 2, open: 3, waistcoat: 4, cardigan: 5, tee: 6, sweatervest: 7, plaid: 8 }, LEGS = { canvas: 0, joggers: 1, chinos: 2, work: 3, combat: 4, pressed: 5, jeans: 6 };      // (Thorn: plaid, jeans)
+const TOPS = { henley: 0, thermal: 2, open: 3, waistcoat: 4, cardigan: 5, tee: 6, sweatervest: 7, plaid: 8, tank: 9 }, LEGS = { canvas: 0, joggers: 1, chinos: 2, work: 3, combat: 4, pressed: 5, jeans: 6, leggings: 7 };      // (Thorn: plaid, jeans, tank, leggings)
 const SHOES = { boots: 0, soft: 1, deck: 2, work: 3, sneakers: 4, flats: 5, loafers: 6 };
 // (and spec.wear over either: someone who wears the uniform in colours of their own, the Proctor)
 function outfitOf(spec) { let O = OUTFITS[spec.outfit] || OUTFITS.uniform; if (spec.outfit === 'offduty' && spec.off) O = Object.assign({}, O, spec.off); return spec.wear ? Object.assign({}, O, spec.wear) : O; }
@@ -1441,6 +1450,12 @@ function buildHead(F, spec, S) {
       g.addColorStop(0, `rgba(240,120,120,${0.55 * E.blush})`); g.addColorStop(1, 'rgba(240,120,120,0)');
       fx.save(); fx.translate(bx, byp); fx.scale(1, 0.55); fx.translate(-bx, -byp); fx.fillStyle = g; fx.fillRect(bx - r, byp - r, 2 * r, 2 * r); fx.restore();
     }
+    if (spec.freckles) {      // (Thorn: a light scatter over the nose and the tops of the cheeks, the same every time it's drawn)
+      fx.save(); fx.fillStyle = shade(P.skin, -0.28); let sd = 17; const rn = () => ((sd = (sd * 16807) % 2147483647) / 2147483647);
+      for (let i = 0; i < 46; i++) { const sx = i % 2 ? 1 : -1, u = rn(), x = sx * (0.12 + 0.95 * u), y = -0.32 - 0.28 * rn() + 0.12 * (1 - u); fx.globalAlpha = 0.25 + 0.35 * rn() * spec.freckles;
+        fx.beginPath(); fx.arc(px(x), py(y), (0.018 + 0.016 * rn()) * U, 0, 7); fx.fill(); }
+      fx.restore();
+    }
     if (spec.beard) { fx.save(); fx.globalAlpha = 0.24; fx.fillStyle = P.beard; fx.beginPath(); fx.ellipse(px(0), py(-1.55), 1.35 * U, 0.75 * U, 0, 0, 7); fx.fill(); fx.beginPath(); fx.ellipse(px(0), py(K.noseY - 0.42), 0.55 * U, 0.16 * U, 0, 0, 7); fx.fill(); fx.restore(); }
     fx.strokeStyle = shade(P.skin, -0.3); fx.lineWidth = 0.035 * U; fx.lineCap = 'round'; fx.beginPath(); fx.arc(px(0.02), py(K.noseY - 0.12 * K.noseSize), 0.1 * K.noseSize * U, Math.PI * 0.15, Math.PI * 0.75); fx.stroke();
     if (E.tears > 0.05) for (const sx of [-1, 1]) {
@@ -1516,7 +1531,10 @@ function buildHair(F, spec, S, H, Hs, k) {
 // length, each hanging from the one above: the top two held to the head, the rest falling with gravity (verlet, each joint kept its length
 // from the one above, the stiffness of the plait near its root easing off down it), kept out of the head and the back. So it bends down its
 // length as it falls, over the shoulders, down past the face when she's bent over, rather than swinging stiff from the head as one piece.)
+// (Thorn: spec.braidKind 'loose': the same chain, but long hair worn loose down the back, half-up from the cap: a wide, flat fall of it, waved,
+// darker at the roots and lighter to the ends (vertex colours over the hair's own), its ends uneven, no tie)
 function braidOf(F, spec, H, hm) {
+  const loose = spec.braidKind === 'loose';
   const len = spec.braidLen || 8, piv = new THREE.Group(); piv.position.set(0, 0.9, -2.0); H.add(piv);
   const TUFT = 0.95, tieAt = new V3(0, -len + 0.15, -0.72);
   const curve = new THREE.CatmullRomCurve3([new V3(0, 0.34, 0.3), new V3(0, 0, 0), new V3(0, -0.7, -0.55), new V3(0, -2.2, -0.85), new V3(0, -len * 0.62, -0.95), new V3(0, -len, -0.7), new V3(0, -len - TUFT, -0.6)]);
@@ -1528,6 +1546,18 @@ function braidOf(F, spec, H, hm) {
     const sj = Lt * j / segs; c.copy(at(sj));
     const dome = Math.sqrt(Math.max(0, 1 - Math.pow(1 - Math.min(1, sj / 0.5), 2)));      // (the top rounded over)
     let k = 1, side = 0;
+    if (loose) {
+      // (across: wide at the back of the head, wider through its length, the ends uneven; through: thin; waved down its length)
+      const u = sj / Lt, wide = u < 0.08 ? lerp(1.6, 3.1, u / 0.08) : lerp(3.1, 3.5, ss(0.08, 0.6, u)) * (u > 0.82 ? 1 - 0.25 * ss(0.82, 1, u) : 1);
+      const thin = (u < 0.06 ? lerp(1.2, 0.55, u / 0.06) : 0.55 * (1 - 0.6 * ss(0.85, 1, u))) * dome, wave = 0.22 * Math.sin(sj * 2.6) * ss(0.12, 0.35, u);
+      for (let v = 0; v <= RAD; v++) {
+        const i = j * (RAD + 1) + v; o.fromBufferAttribute(p, i).sub(c); const a = v / RAD * Math.PI * 2, edge = Math.abs(Math.cos(a));
+        const tip = u > 0.7 ? 1 - 0.8 * ss(0.7, 1, u) * (0.5 + 0.5 * Math.sin(a * 5 + 1.3)) : 1;      // (the ends uneven: some locks longer)
+        const ripple = 1 + 0.12 * Math.sin(a * 7 + sj * 3.1) * ss(0.15, 0.4, u);
+        p.setXYZ(i, c.x + o.x * wide * ripple * Math.max(tip, 0.2) + wave * edge, c.y + o.y * thin * (u > 0.78 ? tip : 1), c.z + o.z * thin + 0.06 * Math.sin(sj * 2.6 + a) * ss(0.12, 0.35, u));
+      }
+      continue;
+    }
     if (sj <= sTie) {
       const t = clamp((sj - sPiv) / (sTie - sPiv), 0, 1), lobe = Math.abs(Math.sin(t * N * Math.PI));
       k = lerp(1.05, 0.55, t) * (0.82 + 0.3 * lobe) * dome; side = Math.sign(Math.sin(t * N * Math.PI)) * 0.08 * lobe * (1 - t * 0.5) * dome;
@@ -1543,6 +1573,11 @@ function braidOf(F, spec, H, hm) {
     }
   }
   geo.computeVertexNormals();
+  if (loose) {      // (darker at the roots, lighter to the ends, in streaks)
+    const col = new Float32Array(p.count * 3);
+    for (let j = 0; j <= segs; j++) { const u = j / segs; for (let v = 0; v <= RAD; v++) { const i = j * (RAD + 1) + v, f = lerp(0.7, 1.55, ss(0.08, 0.8, u)) * (1 + 0.14 * Math.sin(v * 2.3) * ss(0.15, 0.6, u)); col[i * 3] = f; col[i * 3 + 1] = f; col[i * 3 + 2] = f * 0.96; } }
+    geo.setAttribute('color', new THREE.Float32BufferAttribute(col, 3));
+  }
   // (the chain: its first joint inside the gathered hair, the second at the pivot, the rest even down to the tuft's end)
   const M = Math.max(4, Math.round((Lt - sPiv) / 0.75)), J = [0, sPiv]; for (let m = 1; m <= M; m++) J.push(sPiv + (Lt - sPiv) * m / M);
   const nb = J.length, restL = J.map(at), bones = [];
@@ -1556,13 +1591,15 @@ function braidOf(F, spec, H, hm) {
     for (let v = 0; v <= RAD; v++) { const i = j * (RAD + 1) + v; SI[i * 4] = a; SI[i * 4 + 1] = Math.min(a + 1, nb - 2); SW[i * 4] = 1 - t; SW[i * 4 + 1] = t; }
   }
   geo.setAttribute('skinIndex', new THREE.Uint16BufferAttribute(SI, 4)); geo.setAttribute('skinWeight', new THREE.Float32BufferAttribute(SW, 4));
-  const mesh = new THREE.SkinnedMesh(geo, tmat(spec.hair, { rim: '#3a3a4a', rimK: 0.6, skin: true })); mesh.castShadow = true; mesh.frustumCulled = false; mesh.customDepthMaterial = DEPTHM;
+  const mesh = new THREE.SkinnedMesh(geo, tmat(spec.hair, { rim: '#3a3a4a', rimK: 0.6, skin: true, vc: loose, unique: loose })); mesh.castShadow = true; mesh.frustumCulled = false; mesh.customDepthMaterial = DEPTHM;
   mesh.add(bones[0]); piv.add(mesh);
   const hull = new THREE.SkinnedMesh(hullGeo(geo, 0.05), INKM.skinned); hull.frustumCulled = false; piv.add(hull);
   H.updateWorldMatrix(true, true); const skel = new THREE.Skeleton(bones); mesh.bind(skel); hull.bind(skel, mesh.bindMatrix);      // (bound as placed, the head's scale and all: the quaternions' skinning keeps no scale of its own)
   // (the tie, on the bone of the length it's on, across the plait)
-  const tb = Math.max(0, mid.findIndex((m, i) => i === mid.length - 1 || sTie < mid[i + 1])), tie = new THREE.Mesh(new THREE.TorusGeometry(0.24, 0.07, 8, 16), tmat(spec.ribbon || '#6a3a2a'));
-  tie.position.copy(at(sTie)).sub(restL[tb]); tie.quaternion.setFromUnitVectors(new V3(0, 0, 1), curve.getTangentAt(sTie / Lt)); bones[tb].add(tie); ink(tie, 0.04);
+  if (!loose) {
+    const tb = Math.max(0, mid.findIndex((m, i) => i === mid.length - 1 || sTie < mid[i + 1])), tie = new THREE.Mesh(new THREE.TorusGeometry(0.24, 0.07, 8, 16), tmat(spec.ribbon || '#6a3a2a'));
+    tie.position.copy(at(sTie)).sub(restL[tb]); tie.quaternion.setFromUnitVectors(new V3(0, 0, 1), curve.getTangentAt(sTie / Lt)); bones[tb].add(tie); ink(tie, 0.04);
+  }
   F.tail = { piv, bones, mesh, restL, X: restL.map(() => new V3()), Xp: restL.map(() => new V3()), W: restL.map(() => new V3()), live: false, sim: true, len: [] };
 }
 // The plait's chain, a step: the top two joints held where the head has them, the rest falling (verlet, damped), each drawn back toward where
@@ -2063,7 +2100,9 @@ function makeGLB(spec, T) {
 }
 function garmentGLB(F, name) {
   if (F.gm[name]) return F.gm[name];
-  const spec = F.spec, O = outfitOf(spec), L = F.L, uni = spec.outfit === 'uniform' ? 1 : 0, geo = F.model.mesh[name].geo;
+  const spec = F.spec, O = outfitOf(spec), L = F.L, uni = spec.outfit === 'uniform' ? 1 : 0;
+  let geo = F.model.mesh[name].geo;
+  if (/^(Tunic|Shirt)/.test(name) && O.top === 'tank') geo = sleeveless(geo, L);      // (Thorn: a tank top: the shirt cut down to one)
   let m;
   if (/^NightShirt/.test(name)) {      // (Fenwick: his nightshirt, undyed linen, a shift: drawn as her chemise is)
     m = tmat(NIGHT_M, { skin: true, morph: true, side: THREE.DoubleSide, rim: '#3a3028', rimK: 0.55, pattern: 'dressG', bindAttr: true, unique: true }); const U = m.userData.u;
@@ -2154,6 +2193,51 @@ function garmentPeriod(F, name) {
   if (depth) { m.polygonOffset = true; m.polygonOffsetFactor = depth; m.polygonOffsetUnits = 2 * depth; }
   const sm = skinned(F, geo, m); sm.castShadow = true; sm.receiveShadow = false; ink(sm, INK_W, F, null, HEM_R);
   F.gm[name] = sm; return sm;
+}
+// (Thorn: a garment cut exactly along a line on it: field(p) ≥ 0 kept, the triangles across the line cut there, each new point interpolated in
+// everything it carries (its place, its normal, its shape keys and the rest; its skinning the nearer end's), shared between the triangles on
+// either side, so the cut edge is one clean edge, outlined as a hem)
+function clipGeo(geo, field) {
+  const P = geo.attributes.position, ix = geo.index.array, names = Object.keys(geo.attributes), morph = geo.morphAttributes.position || [];
+  const out = {}; for (const n of names) out[n] = []; const outM = morph.map(() => []), idx = [], val = new Float32Array(P.count), map = new Int32Array(P.count).fill(-1), cuts = new Map();
+  const v = new V3(); for (let i = 0; i < P.count; i++) val[i] = field(v.fromBufferAttribute(P, i), i);
+  let nv = 0;
+  const emit = (i, j, t) => {      // (point i, or between i and j at t)
+    const near = j == null || t < 0.5 ? i : j;
+    for (const n of names) { const A = geo.attributes[n], k = A.itemSize, skin = /^skin/.test(n);
+      for (let c = 0; c < k; c++) { const a = A.array[(skin ? near : i) * k + c]; out[n].push(j == null || skin ? a : a + (A.array[j * k + c] - a) * t); } }
+    morph.forEach((M, m) => { for (let c = 0; c < 3; c++) { const a = M.array[i * 3 + c]; outM[m].push(j == null ? a : a + (M.array[j * 3 + c] - a) * t); } });
+    return nv++;
+  };
+  const keepV = i => (map[i] >= 0 ? map[i] : (map[i] = emit(i)));
+  const cutV = (i, j) => { const key = i < j ? i + '_' + j : j + '_' + i; if (cuts.has(key)) return cuts.get(key); const t = val[i] / (val[i] - val[j]); const id = emit(i, j, t); cuts.set(key, id); return id; };
+  for (let t = 0; t < ix.length; t += 3) {
+    const T = [ix[t], ix[t + 1], ix[t + 2]], inn = T.map(i => val[i] >= 0), n = inn.filter(Boolean).length;
+    if (n === 3) { idx.push(keepV(T[0]), keepV(T[1]), keepV(T[2])); continue; }
+    if (n === 0) continue;
+    const r = inn.indexOf(n === 1); const a = T[r], b = T[(r + 1) % 3], c = T[(r + 2) % 3];      // (a: the one on its own side; b, c in order after it)
+    if (n === 1) idx.push(keepV(a), cutV(a, b), cutV(a, c));
+    else { const ab = cutV(b, a), ac = cutV(c, a); idx.push(keepV(b), keepV(c), ac, keepV(b), ac, ab); }
+  }
+  const g = new THREE.BufferGeometry(); g.name = geo.name;
+  for (const n of names) { const A = geo.attributes[n]; g.setAttribute(n, new THREE.BufferAttribute(new A.array.constructor(out[n]), A.itemSize, A.normalized)); }
+  if (morph.length) g.morphAttributes.position = morph.map((M, m) => new THREE.BufferAttribute(new Float32Array(outM[m]), 3));
+  g.morphTargetsRelative = geo.morphTargetsRelative; g.setIndex(idx);
+  g.userData = Object.assign({}, geo.userData, { shared: false, hull: undefined }); return g;
+}
+// (Thorn: a top as built, cut into a tank top: without its sleeves (their triangles marked as sleeve, region 1); its armholes cut from the
+// armpit up to a strap over each shoulder; a scoop at the front of the neck and a shallower one behind)
+function sleeveless(geo, L) {
+  const reg = geo.attributes.region;
+  const nl = L.neckline, pit = L.armpit, shX = L.shX, top = L.shoulder + 0.04, SW = 0.062;
+  return clipGeo(geo, (p, i) => {
+    if (reg && reg.getX(i) > 0.5) return -0.02;      // (the sleeves: off)
+    const ax = Math.abs(p.x), y = p.y, back = 0.022 * ss(0.01, -0.03, p.z);      // (cut a little further in behind, inside where the sleeve was)
+    const arm = y < pit - 0.035 ? 1 : (shX - 0.026 - back - (shX - 0.026 - 0.104) * clamp((y - pit + 0.035) / (top - pit + 0.035), 0, 1)) - ax;      // (inside the armhole's edge)
+    const front = ss(-0.02, 0.03, p.z), depth = lerp(0.03, 0.085, front), line = nl - 0.006 - depth * Math.max(0, 1 - (ax / SW) ** 2);
+    const neck = ax < SW ? line - y : 1;      // (below the scoop)
+    return Math.min(arm, neck);
+  });
 }
 const CLOTHED = /^(Dress|Kirtle|NightDress|Gown)(Long|Elbow)?$/;      // (Fenwick: the skirts are cloth; a chemise is built as a shirt, with its own raised mesh)
 // (a garment as built, without its skirt: the triangles wholly below the waist and not of a sleeve taken out, for its cloth to hang there)
@@ -2703,7 +2787,7 @@ function dressGLB(F) {
   F.clothes = { top: F.gm[want.top], bottoms: F.gm[want.bottoms], under: F.gm[want.under] }; F.bootL = F.bootR = F.gm.Boots; F.layers = ['top', 'bottoms', 'under']; F.skirt = null;
   // the skin under each garment hidden (so nothing pokes through as they move)
   let hide = 1 << R.FOOT; const H = r => { hide |= 1 << r; };
-  H(R.CHEST); H(R.UPARM); H(R.WAIST_HI); if (longS) H(R.FOREARM); if (st.top !== 'up') H(R.WAIST);
+  if (O.top !== 'tank') { H(R.CHEST); H(R.UPARM); } H(R.WAIST_HI); if (longS) H(R.FOREARM); if (st.top !== 'up') H(R.WAIST);      // (Thorn: bare arms in a sleeveless top)
   if (st.bottoms !== 'down') { H(R.HIPS); H(R.HIPS_LO); H(R.SEAT); H(R.THIGH); H(R.KNEE); H(R.SHIN); } else H(R.SHIN);
   if (st.under !== 'down') { H(R.SEAT); H(R.HIPS_LO); }
   F.skinMat.userData.u.uHide.value = hide;

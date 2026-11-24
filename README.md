@@ -1,10 +1,10 @@
 # Thorn
 
-Fenwick Hall's base models, its correction and pain engine, and its living room, ported from [fenwick](https://github.com/asonichero/fenwick). On them is a correction test with James Edwards (based on Fenwick's Silas, with his own look), and two women in his life who've asked him to hold them to account: Rose (Fenwick's) and Bethan (Thorn's own). All three are in modern clothes. The page has Fenwick's figures character panel, but it runs one whole correction rather than the figures page's endless loop of rounds: she's placed, you run it, it ends, then the aftercare, then a summary of what came of it.
+Fenwick Hall's base models, its correction and pain engine, and its living room, ported from [fenwick](https://github.com/asonichero/fenwick). On them is a correction test with James Edwards (based on Fenwick's Silas, with his own look), and women in his life who've asked him to hold them to account: Rose (Fenwick's), Bethan and Niamh (Thorn's own). All are in modern clothes. The page has Fenwick's figures character panel, but it runs one whole correction rather than the figures page's endless loop of rounds: she's placed, you run it, it ends, then the aftercare, then a summary of what came of it.
 
 ## The premise
 
-The people James corrects are people in his life who trust him. Each has agreed, of their own accord, to give him the authority to discipline them: to relieve guilt, to build habits, or to improve their behaviour. It's always on terms agreed first, with a word of their own that stops it at once, and with aftercare after. Most of them, in time, come to have romantic or sexual feelings for him, from the steady, supportive presence he is. The whole of it, and Rose's and Bethan's stories under it, is in [`docs/lore.md`](docs/lore.md).
+The people James corrects are people in his life who trust him. Each has agreed, of their own accord, to give him the authority to discipline them: to relieve guilt, to build habits, or to improve their behaviour. It's always on terms agreed first, with a word of their own that stops it at once, and with aftercare after. Most of them, in time, come to have romantic or sexual feelings for him, from the steady, supportive presence he is. The whole of it, and each woman's story under it, is in [`docs/lore.md`](docs/lore.md).
 
 In the game:
 - Each subject has her reasons for asking (`agreed`) and how her feelings for him grow (`feelings`), in `js/cast.js`.
@@ -27,10 +27,11 @@ No build step and no dependencies: three.js r128 is in `vendor/`.
 The living room at night. You play James.
 
 - **The panel, down the left** (as Fenwick's figures page has it):
-  - **Who:** Rose or Bethan; who she is, why she asked you, and her word (*Lantern*, *Bluebell*). Each keeps her own outfit and her own tracks with him.
+  - **Who:** Rose, Bethan or Niamh; who she is, why she asked you, and her word (*Lantern*, *Bluebell*, *Curtain*). Each keeps her own outfit and her own tracks with him.
   - **Outfit:**
     - **Rose:** jeans (a plain pink tee, jeans, trainers), cardigan (her red cardigan over a shirt, jeans, flats), lounge (a marl top, joggers, slippers), work (a henley, chinos, work shoes from the bakery), or None.
     - **Bethan:** office (a sage cardigan over a blouse, smart trousers, flats), weekend (a print shirt open over a tee, jeans, trainers), home (a soft lilac top and joggers, slippers), or None.
+    - **Niamh:** rehearsal (a black tank top, leggings, jazz shoes), casual (a sage tee, jeans, trainers), cosy (a cream cardigan over a white top, leggings, slippers), or None.
   - **Clothes:** before it begins, how she starts. During it, James changes them, seen: T-shirt or top raised, jeans or trousers lowered, knickers lowered.
   - **James:** tee (a plain maroon T-shirt, jeans, boots), henley (sleeves pushed up, jeans, boots), flannel (a check shirt open over a tee, work trousers, boots), knit (a cardigan over a shirt, chinos, loafers), or None.
   - **Position:**
@@ -74,12 +75,12 @@ The living room at night. You play James.
 | `models/thorn_hair.glb` | Fenwick's hair styles and beard, unchanged, plus two built for James: `sweptback` (parted on his left, swept back and over to his right, short at the back) and `trim` (the beard with its cheek line running down from the sideburn to the moustache). |
 | `models/thorn_f.glb` | Fenwick's female model, rebuilt with `tools/blender/build_figures.py` in Meridian's modern layers rather than Fenwick's period dress: a shirt (sleeves pushed up) and a long-sleeved top, each down or raised; trousers, up or lowered; briefs, up or lowered; shoes. The body is byte-identical to Fenwick's, and the joints are the same. |
 | `models/thorn_meta.json` | The joints and landmarks; hers measured anew for the modern layers. |
-| `js/figure.js`, `js/poses.js` | The figures and posing, ported. Added: a `jeans` pattern for the trousers (denim twill, fading, contrast double-stitching, scooped and patch pockets, a yoke, rivets) and a `plaid` top (a check flannel shirt open over a tee); boots in the wearer's own colour; a beard in its own colour and style (`beardCol`, `beardStyle`). |
+| `js/figure.js`, `js/poses.js` | The figures and posing, ported. Added: a `jeans` pattern for the trousers (denim twill, fading, contrast double-stitching, scooped and patch pockets, a yoke, rivets) and a `plaid` top (a check flannel shirt open over a tee); boots in the wearer's own colour; a beard in its own colour and style (`beardCol`, `beardStyle`); a tank top (the shirt cut exactly to one: `clipGeo`), leggings, freckles, and long hair worn loose on the plait's physics chain (`braidKind: 'loose'`). |
 | `js/pain.js` | The pain model, ported, with the hairbrush, the paddle and the belt added. |
 | `js/session.js` | The correction, ported. Added: the implements (held, aimed, laid by, marks, sounds, lines, where each is allowed). |
 | `js/implements.js` | New: the hairbrush, the paddle and the belt, built in the hand's frame. |
 | `js/livingroom.js`, `js/kit.js` | The living room, ported. Added: a dining table and an armless dining chair, and `lr.bay()`, which gives the room's positions to the correction, with its cameras and the coffee table moved for the sofa. |
-| `js/cast.js`, `js/lines.js` | New for Thorn: Bethan (26, James's colleague, a mother with her partner Will, who knows and supports it), with her own look, lines and terms; Rose (19, at her mum's bakery) as Fenwick wrote her; and James Edwards (37, a tree surgeon) with Fenwick's Silas's temperament and build and his own look: dark brown hair swept back from a left part, a short ginger-brown beard, brown eyes, fair skin, a maroon tee. A couple in the present day. Rose's lines, James's, the aftercare and her terms are rewritten for now (the woods after dark, a dead phone, her nan's), in the same structure. |
+| `js/cast.js`, `js/lines.js` | New for Thorn: Niamh (21, a musical theatre student he met at the amateur dramatic society; pastoral help first, then this, once he'd told her about Rose and Bethan); Bethan (26, James's colleague, a mother with her partner Will, who knows and supports it), with her own look, lines and terms; Rose (19, at her mum's bakery) as Fenwick wrote her; and James Edwards (37, a tree surgeon) with Fenwick's Silas's temperament and build and his own look: dark brown hair swept back from a left part, a short ginger-brown beard, brown eyes, fair skin, a maroon tee. A couple in the present day. Rose's lines, James's, the aftercare and her terms are rewritten for now (the woods after dark, a dead phone, her nan's), in the same structure. |
 | `js/talk.js`, `js/audio.js`, `js/stage.js` | Conversations, synthesised sound and the renderer, ported. |
 | `tools/blender/`, `tools/export-head.js` | The model builds. Hers is built in modern layers, and the hair adds James's styles; the outputs are named `thorn_*`, and `THORN_OUT` builds somewhere else. |
 

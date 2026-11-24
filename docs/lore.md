@@ -63,3 +63,17 @@ Her word is **Bluebell**, for the ones that come up along the lane by the office
 In a correction she manages it rather than defies it. She apologises, talks herself through it, and holds herself together for as long as she can, and when she gives in she holds on to him rather than reaching back. Her lines keep to the arrangement itself. Her family stays offstage: her child is never named or mentioned in a scene.
 
 *Her look is the game's own: dark chestnut hair in a low chignon, green-grey eyes, fair skin, compact and soft. Her outfits are a sage cardigan over a blouse for the office, a print shirt open over a tee at the weekend, and a soft lilac top and joggers at home.*
+
+## Niamh
+
+Niamh (said "Neev") is 21, in the final year of a musical theatre degree, and in every show the amateur dramatic society puts on. That's where she met James. She is bright, quick and genuinely gifted, big-hearted when she's paying attention, funny, theatrical and impatient. She finds it easier to be dramatic than to be sorry.
+
+She admired his wisdom and his way with people. After a heart-to-heart at the society she saw what she was doing. Under pressure she makes everything about herself: she's late, under-rehearsed and on her phone, she cancels on people at the last minute, she flares up at notes and storms off, and she doesn't listen to the people who love her when they tell her so. It was hurting her parents, her friends, whoever she was seeing, and her own focus in rehearsals and performances.
+
+He offered to help, and at first it was only pastoral: talking. When she said she wasn't getting anywhere, that she knew it all and did it anyway, he told her about Rose and Bethan, and she agreed it might help her too. That makes her reasons **to improve her behaviour** and **habits**. He holds her to turning up, being ready, listening, and not making everything about herself.
+
+Her word is **Curtain**, like at the end of the show. She admired him first, for how steady he is and how he listens. The admiring is turning into something else, and she knows it.
+
+In a correction she argues out loud: it's unfair, he's being dramatic, she was about to learn it. She looks back at him, and her pride holds until it doesn't.
+
+*Her look follows the AI-generated reference images supplied for her: long, loose, wavy honey-brown hair with darker roots, worn half-up; grey-blue eyes; freckles; fair skin; a slim, toned dancer's build. Her outfits are rehearsal blacks (a tank top, high-waisted leggings, jazz shoes), a sage tee with jeans and trainers, and a cream cardigan over a white top with leggings.*

@@ -71,6 +71,26 @@ const ROSTER = {
     look: { skin: '#f2d2bc', hair: '#3a2216', hairStyle: 'chignon', eyes: '#5e7a6c', lips: '#b86a6a' },
     dynamic: { romance: true, bond: 0.45 }, word: 'Bluebell', base: 'smile',
   },
+  // ── Niamh (Thorn's own: docs/lore.md) ──
+  niamh: {
+    id: 'niamh', name: 'Niamh', short: 'Niamh', title: 'Niamh', age: 21, role: 'A musical theatre student; met James at the amateur dramatic society',
+    about: {
+      names: 'Niamh (said “Neev”). Everyone at the society gets it wrong the first time; James never did.',
+      flaw: 'Making everything about herself when she’s under pressure: late, under-rehearsed, on her phone, cancelling on people at the last minute, flaring up at notes and storming off, and then not listening to the people who love her when they say so.',
+      history: 'In her final year of a musical theatre degree, and in every show the amateur dramatic society puts on, where she met James. It was hurting everything: her parents, her friends, whoever she was seeing, and her focus in rehearsals and performances.',
+      temperament: 'Bright, quick and genuinely gifted; big-hearted when she’s paying attention; funny, theatrical, impatient. Easier to be dramatic than to be sorry.',
+      resistance: 'Out loud: she argues the toss, protests that it’s unfair, makes a scene of it, and looks back at him. Her pride holds out until it doesn’t. What she’s corrected for is turning up, being prepared, and listening.',
+      terms: 'After a heart-to-heart at the society, he offered to help, and for a while it was only talking. When she said she wasn’t getting anywhere, he told her about Rose and Bethan, and she agreed it might help her too. They agreed his terms between them, and her word.',
+    },
+    agreed: { reasons: ['behaviour', 'habits'],
+      story: 'She admired his wisdom and his way with people, and after a heart-to-heart she saw what she was doing: to her parents, her friends, her partners, and to her own rehearsals and performances. His help was pastoral at first. When she told him she knew it all and still wasn’t changing, he explained how it is with Rose and Bethan, and she agreed it might help her too.' },
+    feelings: { rate: 1.1, text: 'She admired him first: how steady he is, how he listens. The admiring is turning into something else, and she knows it.' },
+    resist: { style: 'overt', overt: 0.6, covert: 0.25 }, meters: { wilfulness: 0.6, compliance: 0.35, mindfulness: 0.3 },
+    pain: { tolerance: 0.45, resilience: 0.62 },
+    body: { type: 'slim and toned, a dancer, a little taller than average', h: { f: 1.67 }, mass: 0.5, fat: 0.34, bust: 0.46, response: 1 },
+    look: { skin: '#f3d8c6', hair: '#6a523e', hairStyle: 'braid', hairCap: 'swept', braidKind: 'loose', braidLen: 6.2, eyes: '#7d93a6', lips: '#c48a86', freckles: 0.8 },
+    dynamic: { romance: true, bond: 0.3 }, word: 'Curtain', base: 'defiant',
+  },
 };
 const IDS = Object.keys(ROSTER);
 
@@ -91,6 +111,14 @@ const WARDROBE = {
     work: { top: 'henley', sleeves: 'rolled', tunic: '#5a6a4a', shirt: '#e8dcc4', trousers: '#c8b896', legs: 'chinos', legAccent: '#8a7a5a',
       under: '#f2ece4', shoes: 'work', shoe: '#5a3e2a', sole: '#2a2018', trim: '#c8a46a', sock: '#6a5a4a' },
   },
+  niamh: {
+    rehearsal: { top: 'tank', sleeves: 'rolled', tunic: '#1c1c20', shirt: '#1c1c20', accent: '#1c1c20', trousers: '#18181c', legs: 'leggings', legAccent: '#18181c',
+      under: '#2a2628', shoes: 'flats', shoe: '#141414', sole: '#0c0c0c', trim: '#2a2a2a', sock: '#f0d4c2' },
+    casual: { top: 'tee', sleeves: 'rolled', tunic: '#9aa890', shirt: '#9aa890', print: '#9aa890', accent: '#9aa890', trousers: '#3c4e6e', legs: 'jeans', legAccent: '#d8a04a',
+      under: '#e8d4d8', shoes: 'sneakers', shoe: '#f4f2ee', sole: '#e8e4dc', trim: '#9aa890', sock: '#f4f2ee' },
+    cosy: { top: 'cardigan', sleeves: 'long', tunic: '#ddd6c8', shirt: '#f4f2ee', print: '#b8ad98', accent: '#ddd6c8', trousers: '#18181c', legs: 'leggings', legAccent: '#18181c',
+      under: '#d8d0e2', shoes: 'soft', shoe: '#c8bfb0', sole: '#7a7060', trim: '#7a7060', sock: '#f0ebe4' },
+  },
   bethan: {
     office: { top: 'cardigan', sleeves: 'long', tunic: '#7e8c6c', shirt: '#f2ece0', print: '#d8cdb0', accent: '#7e8c6c', trousers: '#2a3044', legs: 'pressed', legAccent: '#1e2432',
       under: '#e8cdd2', shoes: 'flats', shoe: '#1e1a1a', sole: '#121010', trim: '#3a3030', sock: '#e2c8b8' },
@@ -103,6 +131,7 @@ const WARDROBE = {
 // (a line about each, for the set-up)
 const OUTFIT_NOTES = {
   jeans: 'a plain pink tee, jeans, trainers', cardigan: 'her red cardigan over a shirt, jeans, flats', lounge: 'a marl top and joggers, slippers', work: 'from the bakery: a henley, chinos, work shoes',
+  rehearsal: 'rehearsal blacks: a sleeveless top, leggings, jazz shoes', casual: 'a sage tee, jeans, trainers', cosy: 'a cream cardigan over a white top, leggings, slippers',
   office: 'a sage cardigan over a blouse, smart trousers, flats', weekend: 'a print shirt open over a tee, jeans, trainers', home: 'a soft lilac top and joggers, slippers',
   tee: 'a plain maroon T-shirt, jeans, boots', henley: 'a henley, sleeves pushed up, jeans, boots', flannel: 'a check flannel shirt open over a tee, work trousers, boots', knit: 'a cardigan over a shirt, chinos, loafers',
 };
@@ -143,7 +172,7 @@ const pronouns = () => ({ they: 'she', them: 'her', their: 'her', They: 'She' })
 // (either of them: Rose's plait, Bethan's chignon)
 function figureSpec(id, sex, outfit) {
   const r = ROSTER[id], L = r.look, W = WARDROBE[id] || {}, none = outfit === 'none', key = W[outfit] ? outfit : outfits(id)[0], O = W[key] || {};
-  return { who: id, sex: 'f', height: r.body.h.f, mass: r.body.mass, fat: r.body.fat, skin: L.skin, hair: L.hair, hairStyle: L.hairStyle, hairCap: L.hairCap, braidLen: L.braidLen, ribbon: L.ribbon,
+  return { who: id, sex: 'f', height: r.body.h.f, mass: r.body.mass, fat: r.body.fat, skin: L.skin, hair: L.hair, hairStyle: L.hairStyle, hairCap: L.hairCap, braidLen: L.braidLen, braidKind: L.braidKind, ribbon: L.ribbon, freckles: L.freckles || 0,
     eyes: L.eyes, lips: L.lips || null, beard: false, outfit: none ? 'none' : 'offduty', off: O, outfitKey: none ? 'none' : key, dept: O.accent || O.tunic || '#a8282a', bust: r.body.bust };
 }
 // James as a figure: c.outfit one of his (his first by default) or 'none'; skin, hair, hairStyle, beard, beardCol as chosen.
@@ -180,7 +209,7 @@ function grow(id, rel, r) {
   return { rel: out, delta };
 }
 // Voice pitch for the babble and cries (Hz).
-const PITCH = { james: 116, rose: 210, bethan: 200 };
+const PITCH = { james: 116, rose: 210, bethan: 200, niamh: 218 };
 const pitch = id => PITCH[id] || 208;
 
 const api = { METERS, REASONS, ROSTER, IDS, SQUIRE, WARDROBE, OUTFIT_NOTES, outfits, squireOutfits, pronouns, figureSpec, squireSpec, pitch, wriggle, grow };

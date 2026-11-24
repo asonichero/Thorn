@@ -92,6 +92,26 @@ const REACT = {
     paddle: ['James— that’s huge—', 'Oh, that’s not fair.'],
     belt: ['Oh— okay. Okay.', 'The belt? …All right.'],
   },
+  niamh: {
+    start: ['Fine. I know. I was late again. And I wasn’t off book.', 'This is so— okay. Okay. I agreed to this.', 'Can I just say, for the record, that I’m mortified?'],
+    first: ['Ow!', 'Oh my god—'],
+    flinching: ['Okay— okay, I get it—', 'Ow— that’s— right—'],
+    struggling: ['I snapped at Mum again— I know—', 'Ah— I bailed on Ellie again— I know I did—'],
+    edge: ['I’m sorry— I make everything about me— I’m sorry—', 'Please— I’ll learn it, I’ll be on time—'],
+    past: ['I’m sorry— to all of them— I’m so sorry—'],
+    plead: ['James—', 'Please—'],
+    spent: ['…', 'Mm…', '…'],
+    accept: ['I know. I needed this.', 'Yeah. I know why.'],
+    flushed: ['Don’t look at my face. I’m a tomato.', 'This is not my best angle.'],
+    soothe: ['…oh. Okay. That’s nice.', 'Mm. Can you just do that for a bit.'],
+    defy: ['This is so unfair. Everyone’s late sometimes.', 'Notes are one thing, this is— this is a lot.', 'You’re being really dramatic about this.', 'I was going to learn it. I was literally about to.'],
+    yield: ['…Okay. Okay. You’re right. I’m listening. I’m actually listening.', 'All right— I hear you. I’ll stop fighting it.'],
+    word: '{word}— {word}, please, stop.',
+    end: ['…I think I can actually focus now. Weird.', '…Okay. On time on Thursday. And off book.'],
+    hairbrush: ['Not the hairbrush— that’s so—', 'Oh, come on—'],
+    paddle: ['That is a prop. That has to be a prop.', 'James— no— that’s enormous—'],
+    belt: ['The belt? Oh my god.', 'Okay— okay. I deserve that.'],
+  },
 };
 
 // Aftercare: the conversation once it's over. Her opening line (by outcome: done, or word if she called it; or, if it ended with her defiance
@@ -129,11 +149,30 @@ const AFTER = {
       sofa: 'Yes. I’d like that. Don’t let me check my phone.', work: 'Back to it. Calmer. I’ll text you when I’m home.' },
     close: '…Thank you, James.', closeFond: '…Thank you. For this. For you. Will says thank you too, you know. He means it.',
   },
+  niamh: {
+    open: { done: ['…That was a lot.', '…I feel like I’ve just done a two-show day.'], word: ['I’m sorry. I had to. Thank you for stopping straight away.'],
+      unbroken: ['Can we not do the talking bit?', 'I’m fine. Can I go?'],
+      fond: ['…Can I stay here? Just for a bit.', '…You’re the only person I don’t have to perform for.', '…Don’t go anywhere.'] },
+    why: 'Because you’re talented enough that people forgive it, and you’re running out of people. You don’t have to be the lead in everyone’s day, Niamh. Turn up. Listen. That’s all.',
+    reply: { reassure: '…Thank you. Nobody tells me I’m all right unless I’ve just been brilliant.', explain: 'I know. It’s just easier to be dramatic than to be sorry.', ask: 'Sore. Shaky. Quiet inside, for once.' },
+    order: { rest: 'Early night. Off book by Thursday. I mean it.', supper: 'Yes. And I won’t talk about myself the whole time. Probably.',
+      sofa: 'Can we watch something? Not a musical. I’ll only critique it.', work: 'Lines. Then I’m ringing Mum. Properly.' },
+    close: '…Thank you, James.', closeFond: '…Thank you. I mean it. For seeing me, and not just the act.',
+  },
 };
 // The terms (the first time, before he ever corrects her: docs/lore.md): she asks, and says why; James sets out what he'll hold her to and what
 // he'll do, and that none of it is owed and she can take it back; she agrees, and she chooses her word, which stops anything at once. Steps
 // for js/talk.js: lines, then her answer.
 const TERMS = {
+  niamh: [
+    { who: 'captain', text: 'You said the talking isn’t working.' },
+    { who: 'subject', text: 'It isn’t. I know what I do now, and I still do it. Mum. Ellie. Whoever I’m seeing. Rehearsals. I know, and I do it anyway.' },
+    { who: 'captain', text: 'There are two people I help another way. Rose, and Bethan. They asked me to hold them to account, properly. When they slip, I deal with it, across my knee, and then it’s done.' },
+    { who: 'subject', text: '…And it works?' },
+    { who: 'captain', text: 'For them. It might not be for you. If you want it, we agree what I hold you to. You can stop it with a word, or end it altogether, and nothing changes between us. You don’t owe me this.' },
+    { who: 'subject', text: 'Turning up. Being ready. Listening. Not making everything about me.' },
+    { who: 'captain', text: 'Then that’s what I’ll hold you to.' },
+  ],
   bethan: [
     { who: 'subject', text: 'Everyone leans on me. At work, at home. And I’m good at it. I’m just so tired of being the one who holds everything.' },
     { who: 'subject', text: 'I want somewhere I don’t have to be in charge. Where someone else decides, and I just… let them.' },
@@ -155,6 +194,7 @@ const TERMS = {
 };
 // (her agreement, and her word, in her voice)
 const AGREE = {
+  niamh: ['…Yes. I want to try it. I want to be better at people.', 'My word’s {word}. Like at the end of the show.'],
   bethan: ['…Yes. Please. I want that.', 'My word’s {word}. They come up along the lane by the office every spring.'],
   rose: ['…All right. Yes. I want it to be you.', 'My word’s {word}. For the one Nan leaves in the window.'],
 };
