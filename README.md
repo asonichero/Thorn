@@ -1,10 +1,10 @@
 # Thorn
 
-Fenwick Hall's base models, its correction and pain engine, and its living room, ported from [fenwick](https://github.com/asonichero/fenwick). On them is a correction test with Rose, Fenwick's character, and James Edwards, based on Fenwick's Silas but with his own look, both in modern clothes. The page has Fenwick's figures character panel, but it runs one whole correction rather than the figures page's endless loop of rounds: she's placed, you run it, it ends, then the aftercare, then a summary of what came of it.
+Fenwick Hall's base models, its correction and pain engine, and its living room, ported from [fenwick](https://github.com/asonichero/fenwick). On them is a correction test with James Edwards (based on Fenwick's Silas, with his own look), and two women in his life who've asked him to hold them to account: Rose (Fenwick's) and Bethan (Thorn's own). All three are in modern clothes. The page has Fenwick's figures character panel, but it runs one whole correction rather than the figures page's endless loop of rounds: she's placed, you run it, it ends, then the aftercare, then a summary of what came of it.
 
 ## The premise
 
-The people James corrects are people in his life who trust him. Each has agreed, of their own accord, to give him the authority to discipline them: to relieve guilt, to build habits, or to improve their behaviour. It's always on terms agreed first, with a word of their own that stops it at once, and with aftercare after. Most of them, in time, come to have romantic or sexual feelings for him, from the steady, supportive presence he is. The whole of it, and Rose's story under it, is in [`docs/lore.md`](docs/lore.md).
+The people James corrects are people in his life who trust him. Each has agreed, of their own accord, to give him the authority to discipline them: to relieve guilt, to build habits, or to improve their behaviour. It's always on terms agreed first, with a word of their own that stops it at once, and with aftercare after. Most of them, in time, come to have romantic or sexual feelings for him, from the steady, supportive presence he is. The whole of it, and Rose's and Bethan's stories under it, is in [`docs/lore.md`](docs/lore.md).
 
 In the game:
 - Each subject has her reasons for asking (`agreed`) and how her feelings for him grow (`feelings`), in `js/cast.js`.
@@ -27,8 +27,10 @@ No build step and no dependencies: three.js r128 is in `vendor/`.
 The living room at night. You play James.
 
 - **The panel, down the left** (as Fenwick's figures page has it):
-  - **Her:** who Rose is, why she asked you, and her word, *Lantern*.
-  - **Outfit:** jeans (a plain pink tee, jeans, trainers), cardigan (her red cardigan over a shirt, jeans, flats), lounge (a marl top, joggers, slippers), work (a henley, chinos, work shoes from the bakery), or None.
+  - **Who:** Rose or Bethan; who she is, why she asked you, and her word (*Lantern*, *Bluebell*). Each keeps her own outfit and her own tracks with him.
+  - **Outfit:**
+    - **Rose:** jeans (a plain pink tee, jeans, trainers), cardigan (her red cardigan over a shirt, jeans, flats), lounge (a marl top, joggers, slippers), work (a henley, chinos, work shoes from the bakery), or None.
+    - **Bethan:** office (a sage cardigan over a blouse, smart trousers, flats), weekend (a print shirt open over a tee, jeans, trainers), home (a soft lilac top and joggers, slippers), or None.
   - **Clothes:** before it begins, how she starts. During it, James changes them, seen: T-shirt or top raised, jeans or trousers lowered, knickers lowered.
   - **James:** tee (a plain maroon T-shirt, jeans, boots), henley (sleeves pushed up, jeans, boots), flannel (a check shirt open over a tee, work trousers, boots), knit (a cardigan over a shirt, chinos, loafers), or None.
   - **Position:**
@@ -62,7 +64,7 @@ The living room at night. You play James.
   - **The aftercare on the sofa:** reassure her, say why it mattered, ask how she is; then what she's to do with the rest of the evening.
   - **The summary:** where, how many smacks and with what, how it ended, the hardest it got, her defiance before and after, compliance and resentment gained, what he said, what his steadiness built between them (her trust, her feelings for him), and what next.
   - **Begin again** starts another correction. Changing her outfit or his also begins it again.
-- **From the address:** `?outfit=&clothes=down,up,up&sout=&pos=otk|otk:sofa|table|wall&def=&sub=&des=&com=&res=&expr=&resp=&terms=1`. `?still=1` holds it for screenshots: `window.step(n)` draws n frames, and `window.sim(n)` runs n frames without drawing.
+- **From the address:** `?who=rose|bethan&outfit=&clothes=down,up,up&sout=&pos=otk|otk:sofa|table|wall&def=&sub=&des=&com=&res=&expr=&resp=&terms=1`. `?still=1` holds it for screenshots: `window.step(n)` draws n frames, and `window.sim(n)` runs n frames without drawing.
 
 ## What came across, and what changed
 
@@ -77,7 +79,7 @@ The living room at night. You play James.
 | `js/session.js` | The correction, ported. Added: the implements (held, aimed, laid by, marks, sounds, lines, where each is allowed). |
 | `js/implements.js` | New: the hairbrush, the paddle and the belt, built in the hand's frame. |
 | `js/livingroom.js`, `js/kit.js` | The living room, ported. Added: a dining table and an armless dining chair, and `lr.bay()`, which gives the room's positions to the correction, with its cameras and the coffee table moved for the sofa. |
-| `js/cast.js`, `js/lines.js` | New for Thorn: Rose (19, at her mum's bakery) as Fenwick wrote her, and James Edwards (37, a tree surgeon) with Fenwick's Silas's temperament and build and his own look: dark brown hair swept back from a left part, a short ginger-brown beard, brown eyes, fair skin, a maroon tee. A couple in the present day. Rose's lines, James's, the aftercare and her terms are rewritten for now (the woods after dark, a dead phone, her nan's), in the same structure. |
+| `js/cast.js`, `js/lines.js` | New for Thorn: Bethan (26, James's colleague, a mother with her partner Will, who knows and supports it), with her own look, lines and terms; Rose (19, at her mum's bakery) as Fenwick wrote her; and James Edwards (37, a tree surgeon) with Fenwick's Silas's temperament and build and his own look: dark brown hair swept back from a left part, a short ginger-brown beard, brown eyes, fair skin, a maroon tee. A couple in the present day. Rose's lines, James's, the aftercare and her terms are rewritten for now (the woods after dark, a dead phone, her nan's), in the same structure. |
 | `js/talk.js`, `js/audio.js`, `js/stage.js` | Conversations, synthesised sound and the renderer, ported. |
 | `tools/blender/`, `tools/export-head.js` | The model builds. Hers is built in modern layers, and the hair adds James's styles; the outputs are named `thorn_*`, and `THORN_OUT` builds somewhere else. |
 

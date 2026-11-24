@@ -67,8 +67,8 @@ kbd { font: 10px ui-monospace, monospace; color: var(--dim); }
 
 <div id="panel" class="box">
   <h1>Correction test</h1>
-  <p class="sub">The living room, at night. You’re James. Rose is one of the people in your life who trust you, and she has asked you, on terms you agreed, to hold her to account. One whole correction: placed, run as you judge it, ended, then the aftercare. If it goes too far she says her word, and it stops at once.</p>
-  <h2>Her</h2><div id="her"></div>
+  <p class="sub">The living room, at night. You’re James. Rose and Bethan are people in your life who trust you, and each has asked you, on terms you agreed, to hold her to account. One whole correction: placed, run as you judge it, ended, then the aftercare. If it goes too far she says her word, and it stops at once.</p>
+  <h2>Who</h2><select id="who"></select><div id="her" style="margin-top:6px"></div>
   <h2>Outfit</h2><div class="row" id="outfit"></div>
   <h2>Clothes</h2><div class="row"><button id="pTop"></button><button id="pBot"></button><button id="pUnd"></button></div>
   <small class="note">Before it begins, how she starts; in it, James changes them, seen.</small>
@@ -115,28 +115,37 @@ kbd { font: 10px ui-monospace, monospace; color: var(--dim); }
 <script src="js/talk.js"></script><script src="js/implements.js"></script><script src="js/session.js"></script>
 <script>
 'use strict';
-// Thorn — the correction test: Rose and James in the living room (js/livingroom.js), with Fenwick's figures page's character panel down the
+// Thorn — the correction test: Rose or Bethan, and James, in the living room (js/livingroom.js), with Fenwick's figures page's character panel down the
 // left, and a whole correction run on it (js/session.js) as Fenwick's correction test runs one: she's placed, the player runs it (runs of
 // smacks on a toggle, pace, strength, side, where, soothing, her clothes), and it ends when they end it (James soothes her and dresses her) or
 // when she says her word; then the aftercare on the sofa, the conversation (js/lines.js, js/talk.js), and what came of it. Not the figures
 // page's loop, round after round: one correction, start to finish, and Begin again for another. The premise (docs/lore.md): she asked him, for
 // her own reasons, and his steadiness grows her trust and her feelings for him from one correction to the next (Cast.grow, after each aftercare).
-//   ?outfit=jeans&clothes=down,up,up&sout=henley&pos=otk|otk:sofa|table|wall&def=&sub=&des=&com=&res=&expr=auto&resp=auto&terms=1&still=1
+//   ?who=rose|bethan&outfit=jeans&clothes=down,up,up&sout=henley&pos=otk|otk:sofa|table|wall&def=&sub=&des=&com=&res=&expr=auto&resp=auto&terms=1&still=1
 const $ = id => document.getElementById(id), q = new URLSearchParams(location.search), V3 = THREE.Vector3;
-const ID = Cast.IDS[0], R = Cast.ROSTER[ID], KEY = 'thorn:correction:v1';
+const KEY = 'thorn:correction:v1';
 const c01 = x => Math.max(0, Math.min(1, +x || 0));
 const stored = (() => { try { return JSON.parse(localStorage.getItem(KEY) || '{}'); } catch (e) { return {}; } })();
-const cfg = Object.assign({ outfit: Cast.outfits(ID)[0], clothes: ['down', 'up', 'up'], sOutfit: Cast.squireOutfits()[0], position: 'otk', expr: 'auto', resp: 0, respAuto: true, terms: false, sound: false },
-  stored, { rel: Object.assign({ defiance: R.meters.wilfulness, submission: 0, desire: 0, comfort: 0, resentment: 0 }, stored.rel) });
-const save = () => { try { localStorage.setItem(KEY, JSON.stringify(cfg)); } catch (e) { /* no storage: kept for this visit only */ } };
+// (who's corrected: each of them with her own outfit and her own tracks with him, kept between visits; `rel` and `outfit` are hers who's chosen)
+const cfg = Object.assign({ who: Cast.IDS[0], outfitOf: {}, rels: {}, clothes: ['down', 'up', 'up'], sOutfit: Cast.squireOutfits()[0], position: 'otk', expr: 'auto', resp: 0, respAuto: true, terms: false, sound: false }, stored);
+if (stored.rel && !stored.rels) cfg.rels[Cast.IDS[0]] = stored.rel;      // (from before there was more than one)
+if (q.get('who')) cfg.who = q.get('who'); if (!Cast.ROSTER[cfg.who]) cfg.who = Cast.IDS[0];
+for (const id of Cast.IDS) cfg.rels[id] = Object.assign({ defiance: Cast.ROSTER[id].meters.wilfulness, submission: 0, desire: 0, comfort: 0, resentment: 0 }, cfg.rels[id]);
+let ID, R, OUTFITS;
+function setWho(id) {
+  ID = id; R = Cast.ROSTER[id]; cfg.who = id; cfg.rel = cfg.rels[id]; OUTFITS = Cast.outfits(id).concat(['none']);
+  cfg.outfit = OUTFITS.includes(cfg.outfitOf[id]) ? cfg.outfitOf[id] : OUTFITS[0]; cfg.outfitOf[id] = cfg.outfit;
+}
+setWho(cfg.who);
+const save = () => { try { localStorage.setItem(KEY, JSON.stringify(Object.assign({}, cfg, { rel: undefined, outfit: undefined }))); } catch (e) { /* no storage: kept for this visit only */ } };
 // (the address can set anything, for a look at it)
-if (q.get('outfit')) cfg.outfit = q.get('outfit'); if (q.get('sout')) cfg.sOutfit = q.get('sout'); if (q.get('pos')) cfg.position = q.get('pos');
+if (q.get('outfit') && OUTFITS.includes(q.get('outfit'))) cfg.outfit = cfg.outfitOf[ID] = q.get('outfit'); if (q.get('sout')) cfg.sOutfit = q.get('sout'); if (q.get('pos')) cfg.position = q.get('pos');
 if (q.get('clothes')) cfg.clothes = q.get('clothes').split(',');
 for (const [k, p] of [['defiance', 'def'], ['submission', 'sub'], ['desire', 'des'], ['comfort', 'com'], ['resentment', 'res']]) if (q.get(p) != null) cfg.rel[k] = c01(q.get(p));
 if (q.get('expr')) cfg.expr = q.get('expr'); if (q.get('resp')) { cfg.respAuto = q.get('resp') === 'auto'; if (!cfg.respAuto) cfg.resp = c01(q.get('resp')); }
 if (q.get('terms')) cfg.terms = q.get('terms') === '1';
-const OUTFITS = Cast.outfits(ID).concat(['none']), SOUTFITS = Cast.squireOutfits().concat(['none']), POS = LivingRoom.POSITIONS;
-if (!OUTFITS.includes(cfg.outfit)) cfg.outfit = OUTFITS[0]; if (!SOUTFITS.includes(cfg.sOutfit)) cfg.sOutfit = SOUTFITS[0]; if (!POS.some(p => p[0] === cfg.position)) cfg.position = 'otk';
+const SOUTFITS = Cast.squireOutfits().concat(['none']), POS = LivingRoom.POSITIONS;
+if (!SOUTFITS.includes(cfg.sOutfit)) cfg.sOutfit = SOUTFITS[0]; if (!POS.some(p => p[0] === cfg.position)) cfg.position = 'otk';
 const specFor = () => Cast.figureSpec(ID, 'f', cfg.outfit);
 const relFor = () => Object.assign({}, cfg.rel);
 
@@ -257,8 +266,11 @@ const play = (steps, id, P, r) => Talk.play(steps, {
 
 // ── The panel ──
 const seg = (id, items, cur, fn) => { const el = $(id); el.innerHTML = ''; for (const [v, label, title] of items) { const b = document.createElement('button'); b.textContent = label; if (title) b.title = title; b.className = v === cur ? 'on' : ''; b.onclick = () => fn(v); el.append(b); } };
-$('her').innerHTML = `<b>${R.name}</b>, ${R.age}<small>${R.role}</small><small>${R.about.temperament.split('. ')[0]}.</small>`
-  + `<small>Why she asked you: ${R.agreed.reasons.map(k => Cast.REASONS[k]).join(', and ')}.</small><small>Her word: <b style="font-size:12px">${R.word}</b></small>`;
+for (const id of Cast.IDS) { const r = Cast.ROSTER[id], o = document.createElement('option'); o.value = id; o.textContent = `${r.name}, ${r.age}`; $('who').append(o); }
+const drawHer = () => { $('who').value = ID; $('her').innerHTML = `<small>${R.role}</small><small>${R.about.temperament.split('. ')[0]}.</small>`
+  + `<small>Why she asked you: ${R.agreed.reasons.map(k => Cast.REASONS[k]).join(', and ')}.</small><small>Her word: <b style="font-size:12px">${R.word}</b></small>`; };
+drawHer();
+$('who').onchange = () => { setWho($('who').value); save(); drawHer(); relSliders(); audioOn(); models.then(begin); };
 function relSliders() {
   const el = $('rel'); el.innerHTML = '';
   for (const [k, nm] of [['defiance', 'Defiance'], ['submission', 'Submission'], ['desire', 'Desire'], ['comfort', 'Comfort'], ['resentment', 'Resentment']]) {
@@ -342,7 +354,7 @@ function drawCams() {
   (ses.CAMS[ses.st.phase === 'after' ? 'after' : ses.st.position] || []).forEach(([nm], i) => { const b = document.createElement('button'); b.textContent = nm.replace(/^Captain$/, 'James').replace(/^Their face$/, 'Her face'); b.className = 'box' + (ses.st.cam === i ? ' on' : ''); b.onclick = () => { ses.camera(i); drawCams(); }; el.append(b); });
 }
 function refresh() {
-  seg('outfit', OUTFITS.map(o => [o, o === 'none' ? 'None' : o, o === 'none' ? 'Nothing on, to see how the body moves' : Cast.OUTFIT_NOTES[o]]), cfg.outfit, v => { cfg.outfit = v; save(); audioOn(); models.then(begin); });
+  seg('outfit', OUTFITS.map(o => [o, o === 'none' ? 'None' : o, o === 'none' ? 'Nothing on, to see how the body moves' : Cast.OUTFIT_NOTES[o]]), cfg.outfit, v => { cfg.outfit = cfg.outfitOf[ID] = v; save(); audioOn(); models.then(begin); });
   seg('sout', SOUTFITS.map(o => [o, o === 'none' ? 'None' : o, o === 'none' ? 'Nothing on' : Cast.OUTFIT_NOTES[o]]), cfg.sOutfit, v => { cfg.sOutfit = v; save(); audioOn(); models.then(begin); });
   seg('pos', POS.map(([v, nm]) => [v, nm]), cfg.position, setPosition);
   $('posNote').textContent = NOTES[cfg.position] || '';

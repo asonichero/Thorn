@@ -7,7 +7,10 @@ const TOPS = ['henley', 'thermal', 'open', 'waistcoat', 'cardigan', 'tee', 'swea
 const SHOES = ['boots', 'soft', 'deck', 'work', 'sneakers', 'flats', 'loafers'];
 
 test('Rose and James, adults both: her body, her word and how she takes it, as Fenwick has them; his name and his own look', () => {
-  assert.deepEqual(Cast.IDS, ['rose']);
+  assert.deepEqual(Cast.IDS, ['rose', 'bethan']);
+  for (const id of Cast.IDS) { const X = Cast.ROSTER[id]; assert.ok(X.age >= 18, id + ' a grown-up'); assert.ok(X.word && X.pain.tolerance > 0 && X.body.h.f > 1.5, id);
+    assert.ok(X.agreed.reasons.every(k => Cast.REASONS[k]) && X.agreed.story && X.feelings.text, id + ': why she asked, and how she feels'); assert.ok(Cast.outfits(id).length >= 3, id + ' outfits'); }
+  const B = Cast.ROSTER.bethan; assert.ok(B.age >= 24 && B.age <= 27, 'mid-twenties'); assert.ok(B.agreed.reasons.includes('release')); assert.match(B.agreed.story, /Will/);
   const R = Cast.ROSTER.rose;
   assert.ok(R.age >= 18 && Cast.SQUIRE.age >= 18, 'grown-ups');
   assert.equal(R.word, 'Lantern'); assert.equal(R.body.h.f, 1.65); assert.ok(R.pain.tolerance > 0 && R.pain.resilience > 0);
@@ -18,7 +21,7 @@ test('Rose and James, adults both: her body, her word and how she takes it, as F
 });
 
 test('every outfit is modern: a top, legs and shoes js/figure.js draws, a note for the set-up', () => {
-  for (const [who, W] of [['rose', Cast.WARDROBE.rose], ['james', Cast.SQUIRE.wardrobe]]) {
+  for (const [who, W] of Cast.IDS.map(id => [id, Cast.WARDROBE[id]]).concat([['james', Cast.SQUIRE.wardrobe]])) {
     assert.ok(Object.keys(W).length >= 3, who + ' has outfits');
     for (const k in W) {
       const O = W[k];
@@ -30,7 +33,8 @@ test('every outfit is modern: a top, legs and shoes js/figure.js draws, a note f
 });
 
 test('each outfit as a figure: off duty in her own; nothing on (None); James in his', () => {
-  for (const k of Cast.outfits('rose')) { const s = Cast.figureSpec('rose', 'f', k); assert.equal(s.sex, 'f'); assert.equal(s.outfit, 'offduty'); assert.equal(s.off, Cast.WARDROBE.rose[k]); assert.equal(s.outfitKey, k); assert.equal(s.hairStyle, 'braid'); }
+  for (const id of Cast.IDS) for (const k of Cast.outfits(id)) { const s = Cast.figureSpec(id, 'f', k); assert.equal(s.sex, 'f'); assert.equal(s.outfit, 'offduty'); assert.equal(s.off, Cast.WARDROBE[id][k]); assert.equal(s.outfitKey, k); }
+  assert.equal(Cast.figureSpec('rose').hairStyle, 'braid'); assert.equal(Cast.figureSpec('bethan').hairStyle, 'chignon');
   assert.equal(Cast.figureSpec('rose', 'f', 'none').outfit, 'none');
   assert.equal(Cast.figureSpec('rose').outfitKey, Cast.outfits('rose')[0]);
   for (const k of Cast.squireOutfits()) { const s = Cast.squireSpec({ outfit: k }); assert.equal(s.sex, 'm'); assert.equal(s.outfit, 'offduty'); assert.equal(s.off, Cast.SQUIRE.wardrobe[k]); }

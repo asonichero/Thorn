@@ -15,10 +15,10 @@ const meta = JSON.parse(fs.readFileSync(path.join(MODELS, 'thorn_meta.json')));
 const loaded = Promise.all([Figure.adopt(meta, 'f', buf('thorn_f.glb')), Figure.adopt(meta, 'm', buf('thorn_m.glb')), Figure.adoptHair(buf('thorn_hair.glb'))]);
 
 // (a stage that draws nothing: the session only needs its scene and camera)
-function setup(position, o) {
+function setup(position, o, who, outfit) {
   const scene = new THREE.Scene(), stage = { scene, camera: new THREE.PerspectiveCamera(), go() {}, fade: fn => fn() };
   const lr = LivingRoom.build(scene), bay = lr.bay(); bay.clear(position);
-  const ses = Session.create(stage, bay, Object.assign({ captain: { outfit: 'tee' }, position, between: 'aside', queue: [{ id: 'rose', sex: 'f', outfit: 'jeans' }], witnesses: [], sound: false }, o || {}));
+  const ses = Session.create(stage, bay, Object.assign({ captain: { outfit: 'tee' }, position, between: 'aside', queue: [{ id: who || 'rose', sex: 'f', outfit: outfit || 'jeans' }], witnesses: [], sound: false }, o || {}));
   const ev = []; ses.on((t, d) => ev.push([t, d]));
   ses.start(); return { ses, ev, lr, step: n => { for (let i = 0; i < n; i++) ses.update(0.05); } };
 }
@@ -111,5 +111,19 @@ test('what each leaves: the hairbrush concentrated, the paddle and the belt acro
   const brush = marks('hairbrush'), paddle = marks('paddle'), belt = marks('belt');
   assert.ok(brush.R > 0.1 && brush.L < 0.01, 'the brush on one side only: ' + JSON.stringify(brush));
   assert.ok(paddle.L > 0.5 * paddle.R && belt.L > 0.7 * belt.R, 'the paddle and the belt across both: ' + JSON.stringify({ paddle, belt }));
+  await wait(1700);
+});
+
+test('Bethan, in her office clothes: placed across his knee, run till she gives in and is receptive, ended, the aftercare', async () => {
+  await loaded;
+  const { ses, ev, step } = setup('otk', { implement: 'hairbrush' }, 'bethan', 'office');
+  step(10); assert.equal(ses.current.id, 'bethan'); assert.ok(ses.current.f.gm.Tunic.visible, 'her cardigan, long-sleeved');
+  ses.dress({ top: 'up', bottoms: 'down' }); step(120); ses.set({ pace: 2, strength: 1.25 });
+  for (let i = 0; i < 150 && !(ses.receptive && ses.distress() > 1); i++) { if (ses.covering) ses.tell(); if (!ses.st.running && !ses.busy) ses.run(true); step(10); }
+  assert.ok(ses.receptive && ses.distress() > 1 && !ses.st.word);
+  assert.ok(ev.some(e => e[0] === 'say' && e[1].id === 'bethan'), 'in her own words');
+  ses.run(false); step(5); ses.endTurn(); step(200); await wait(1000); step(2);
+  const end = ev.find(e => e[0] === 'turnEnd'); assert.equal(end[1].outcome, 'done'); assert.equal(end[1].id, 'bethan');
+  ses.aftercare('bethan'); step(5); assert.equal(ses.st.phase, 'after');
   await wait(1700);
 });

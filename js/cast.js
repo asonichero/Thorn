@@ -21,7 +21,7 @@
 'use strict';
 const METERS = ['compliance', 'mindfulness', 'wilfulness'];
 // (why someone asks him: docs/lore.md)
-const REASONS = { guilt: 'to relieve guilt', habits: 'to build habits', behaviour: 'to improve her behaviour' };
+const REASONS = { guilt: 'to relieve guilt', habits: 'to build habits', behaviour: 'to improve her behaviour', release: 'to set responsibility down for a while' };
 
 // ── Rose (Fenwick's Red: her given name; "Red" for the coat) ──
 // resist: how she resists, as two numbers, 0–1: overt (open defiance: the session's wilfulness) and covert (concealment, withholding).
@@ -50,6 +50,27 @@ const ROSTER = {
     look: { skin: '#e8c4a4', hair: '#5a2a1e', hairStyle: 'braid', hairCap: 'swept', braidLen: 4.5, ribbon: '#a8282a', eyes: '#6a5a3a' },
     dynamic: { romance: true, bond: 0.35 }, word: 'Lantern', base: 'smile',
   },
+  // ── Bethan (Thorn's own: docs/lore.md) ──
+  bethan: {
+    id: 'bethan', name: 'Bethan', short: 'Beth', title: 'Bethan', age: 26, role: 'A colleague of James’s; a mother, with her partner, Will',
+    about: {
+      names: 'Bethan. Beth to everyone at work and at home; James uses either.',
+      flaw: 'Holding everything: she says yes to everyone, runs herself into the ground, and when it’s too much she snaps at the people she loves and then can’t forgive herself for it.',
+      history: 'She and James have worked together for two years. She’s twenty-six, with a young family at home and Will, her partner, who she loves and who loves her. She’s the one everyone leans on: in the office, at home, with her mum.',
+      temperament: 'Warm, quick and capable, the organised one, funny when she’s rested. Proud of coping. Lets nobody look after her, and only lately has she let herself want it.',
+      resistance: 'Control, not defiance: she manages it, apologises, talks herself through it, holds herself together for as long as she can. What she’s corrected for is running herself ragged; what she comes for is the moment she can stop holding it all.',
+      terms: 'She asked: one evening after the office emptied, when everything was too much. They agreed his terms between them, and her word, and Will knew before any of it began.',
+    },
+    agreed: { reasons: ['release', 'habits'],
+      story: 'She turned to James for support, and for somewhere she could stop being in charge. Will knows about their meetings, and about the feelings growing between them; he’s seen what it does for her, how much happier and easier she comes home, and he’s signed off on it entirely.' },
+    feelings: { rate: 1.0, text: 'She came for the quiet. She didn’t expect to want his steadiness as much as she does, or him. She doesn’t hide it, and Will’s glad for her.' },
+    braces: true,      // (given in, she holds on: the chair and his leg, not reaching back)
+    resist: { style: 'control', overt: 0.4, covert: 0.55 }, meters: { wilfulness: 0.4, compliance: 0.6, mindfulness: 0.65 },
+    pain: { tolerance: 0.6, resilience: 0.55 },
+    body: { type: 'compact and soft, a little shorter than average', h: { f: 1.6 }, mass: 0.46, fat: 0.55, bust: 0.62, response: 1 },
+    look: { skin: '#f2d2bc', hair: '#3a2216', hairStyle: 'chignon', eyes: '#5e7a6c', lips: '#b86a6a' },
+    dynamic: { romance: true, bond: 0.45 }, word: 'Bluebell', base: 'smile',
+  },
 };
 const IDS = Object.keys(ROSTER);
 
@@ -70,10 +91,19 @@ const WARDROBE = {
     work: { top: 'henley', sleeves: 'rolled', tunic: '#5a6a4a', shirt: '#e8dcc4', trousers: '#c8b896', legs: 'chinos', legAccent: '#8a7a5a',
       under: '#f2ece4', shoes: 'work', shoe: '#5a3e2a', sole: '#2a2018', trim: '#c8a46a', sock: '#6a5a4a' },
   },
+  bethan: {
+    office: { top: 'cardigan', sleeves: 'long', tunic: '#7e8c6c', shirt: '#f2ece0', print: '#d8cdb0', accent: '#7e8c6c', trousers: '#2a3044', legs: 'pressed', legAccent: '#1e2432',
+      under: '#e8cdd2', shoes: 'flats', shoe: '#1e1a1a', sole: '#121010', trim: '#3a3030', sock: '#e2c8b8' },
+    weekend: { top: 'open', sleeves: 'rolled', tunic: '#3e5c7c', shirt: '#f4f0ea', print: '#c6d6e2', accent: '#e8c46a', trousers: '#4a6488', legs: 'jeans', legAccent: '#d8a04a',
+      under: '#d6e2ee', shoes: 'sneakers', shoe: '#f2f0ec', sole: '#e2ddd4', trim: '#3e5c7c', sock: '#f2f0ec' },
+    home: { top: 'thermal', sleeves: 'long', tunic: '#c8b6c8', shirt: '#c8b6c8', accent: '#8a6a8a', trousers: '#5a5866', legs: 'joggers', legAccent: '#c8b6c8',
+      under: '#f0e6e8', shoes: 'soft', shoe: '#8a7a9a', sole: '#4a3e52', trim: '#4a3e52', sock: '#ece4e6' },
+  },
 };
 // (a line about each, for the set-up)
 const OUTFIT_NOTES = {
   jeans: 'a plain pink tee, jeans, trainers', cardigan: 'her red cardigan over a shirt, jeans, flats', lounge: 'a marl top and joggers, slippers', work: 'from the bakery: a henley, chinos, work shoes',
+  office: 'a sage cardigan over a blouse, smart trousers, flats', weekend: 'a print shirt open over a tee, jeans, trainers', home: 'a soft lilac top and joggers, slippers',
   tee: 'a plain maroon T-shirt, jeans, boots', henley: 'a henley, sleeves pushed up, jeans, boots', flannel: 'a check flannel shirt open over a tee, work trousers, boots', knit: 'a cardigan over a shirt, chinos, loafers',
 };
 for (const id in WARDROBE) ROSTER[id].wardrobe = WARDROBE[id];
@@ -110,6 +140,7 @@ const squireOutfits = () => Object.keys(SQUIRE.wardrobe);
 
 const pronouns = () => ({ they: 'she', them: 'her', their: 'her', They: 'She' });
 // Rose as a figure, in one of her outfits (her first by default), or 'none' (nothing on: the figures panel's, to see how the body moves).
+// (either of them: Rose's plait, Bethan's chignon)
 function figureSpec(id, sex, outfit) {
   const r = ROSTER[id], L = r.look, W = WARDROBE[id] || {}, none = outfit === 'none', key = W[outfit] ? outfit : outfits(id)[0], O = W[key] || {};
   return { who: id, sex: 'f', height: r.body.h.f, mass: r.body.mass, fat: r.body.fat, skin: L.skin, hair: L.hair, hairStyle: L.hairStyle, hairCap: L.hairCap, braidLen: L.braidLen, ribbon: L.ribbon,
@@ -149,7 +180,7 @@ function grow(id, rel, r) {
   return { rel: out, delta };
 }
 // Voice pitch for the babble and cries (Hz).
-const PITCH = { james: 116, rose: 210 };
+const PITCH = { james: 116, rose: 210, bethan: 200 };
 const pitch = id => PITCH[id] || 208;
 
 const api = { METERS, REASONS, ROSTER, IDS, SQUIRE, WARDROBE, OUTFIT_NOTES, outfits, squireOutfits, pronouns, figureSpec, squireSpec, pitch, wriggle, grow };
