@@ -1,7 +1,7 @@
 // Thorn (ported from Fenwick Hall) — the stage: a renderer drawing into a high-range buffer, soft bloom on the lights, then one grading pass (filmic tone curve,
 // a moody split tone (cool steel shadows, warm amber highlights), a vignette and a little film grain). An orbiting camera that glides between shots.
 //
-//   const st = Stage.create(view, { fov, low });  st.scene.add(…);  st.start(dt => …);  st.go(pos, look, ms);  st.setLow(on)
+//   const st = Stage.create(view, { fov, low });  st.scene.add(…);  st.start(dt => …);  st.go(pos, look, ms);  st.setLow(on)  st.setFps(n): 0, uncapped
 //   st.hold(on): the picture held still as it last was (nothing moved or drawn: a still behind a title), till let go
 (function (root) {
 'use strict';
@@ -90,23 +90,27 @@ function create(view, opts) {
     controls.update(); draw(now);
   }
   function draw(now) { grade.uniforms.uTime.value = (now || performance.now()) * 0.001 % 100; composer.render(); }
+  // (capped (setFps, or low-CPU mode's 30): a display's frame skipped till the cap's interval has passed, near enough, and the time since the
+  // last one drawn taken in one step, so everything moves as fast as it would have)
+  let cap = 0, lastDrawn = 0;
   function start(each) {
     running = true; last = performance.now();
-    const loop = now => { if (!running) return; frame(now, each); requestAnimationFrame(loop); };
+    const loop = now => { if (!running) return; if (!cap || now - lastDrawn >= 1000 / cap - 4) { lastDrawn = now; frame(now, each); } requestAnimationFrame(loop); };
     requestAnimationFrame(loop);
   }
-  // Low-CPU mode: the picture at one pixel per pixel, no bloom, no multisampling (the grade stays). What's drawn is the bay's business
-  // (SuitBay's setLow); the figures and their animation are untouched.
+  const setFps = n => { cap = Math.max(0, +n || 0); };
+  // Low-CPU mode: the picture at one pixel per pixel, no bloom, no multisampling (the grade stays), at 30 frames a second. What's drawn is
+  // the room's business (its setLow), and the figures' (Figure.setLow).
   let low = false;
   function setLow(on) {
-    low = !!on;
+    low = !!on; cap = low ? 30 : 0;
     renderer.setPixelRatio(low ? 1 : Math.min(1.5, root.devicePixelRatio || 1));
     bloom.enabled = !low;
     for (const t of [composer.renderTarget1, composer.renderTarget2]) if (t && t.samples !== undefined) { t.samples = low ? 0 : 4; t.dispose(); }
     resize();
   }
   if (opts.low) setLow(true);
-  const api = { renderer, scene, camera, controls, composer, bloom, grade, resize, setInsets, setLow, get low() { return low; }, hold: on => { held = !!on; }, get held() { return held; }, start, go, draw, step: (ms, each) => { last = performance.now() - ms; frame(performance.now(), each); }, get moving() { return !!tween; } };
+  const api = { renderer, scene, camera, controls, composer, bloom, grade, resize, setInsets, setLow, get low() { return low; }, setFps, get fps() { return cap; }, hold: on => { held = !!on; }, get held() { return held; }, start, go, draw, step: (ms, each) => { last = performance.now() - ms; frame(performance.now(), each); }, get moving() { return !!tween; } };
   return api;
 }
 

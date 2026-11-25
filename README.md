@@ -17,7 +17,7 @@ In the game:
 ```
 npm run serve        # http://localhost:8123/ opens the correction test (correction.html)
 npm test             # the pain model and the implements; the cast and the lines; conversations; the living room as a correction's;
-                     # and whole corrections, headless, on the models in the room: each position, her word, the implements
+                     # and whole corrections, headless, on the models in the room: each position, her word, the implements; low-CPU mode
 ```
 
 No build step and no dependencies: three.js r128 is in `vendor/`.
@@ -44,6 +44,12 @@ The living room at night. You play James.
   - **Expression** and **Response:** auto, or held.
   - **Her terms first:** the conversation where he sets out how it works and she gives her word.
   - **Sound.**
+  - **Graphics:** Full, or Low-CPU, for a slower machine or a laptop on battery. Kept for next time. Low-CPU mode:
+    - draws at 30 frames a second, one pixel per pixel, with no bloom and no shadows;
+    - draws the room in about a quarter as many pieces (110 rather than 467: the parts of each wall and each piece of furniture that look alike, drawn as one), with its small glows off (the desk lamp's, the lava lamp's, the monitors');
+    - draws her face's layer at most 15 times a second, and steps her hair's physics in fewer, longer steps.
+
+    In a headless browser it took each frame from about 455 draw calls to 104, and roughly halved the time per frame, at half the frames.
 - **The HUD, down the right:**
   - Her name, and where the correction has got to. The phases are defiance, covering, pride, breaking and receptive, then spent.
   - The cameras.
@@ -66,7 +72,7 @@ The living room at night. You play James.
   - **The aftercare on the sofa:** reassure her, say why it mattered, ask how she is; then what she's to do with the rest of the evening.
   - **The summary:** where, how many smacks and with what, how it ended, the hardest it got, her defiance before and after, compliance and resentment gained, what he said, what his steadiness built between them (her trust, her feelings for him), and what next.
   - **Begin again** starts another correction. Changing her outfit or his also begins it again.
-- **From the address:** `?who=rose|bethan&outfit=&clothes=down,up,up&sout=&pos=otk|otk:sofa|table|wall&def=&sub=&des=&com=&res=&expr=&resp=&terms=1`. `?still=1` holds it for screenshots: `window.step(n)` draws n frames, and `window.sim(n)` runs n frames without drawing.
+- **From the address:** `?who=rose|bethan&outfit=&clothes=down,up,up&sout=&pos=otk|otk:sofa|table|wall&def=&sub=&des=&com=&res=&expr=&resp=&terms=1&low=1`. `?still=1` holds it for screenshots: `window.step(n)` draws n frames, and `window.sim(n)` runs n frames without drawing.
 
 ## What came across, and what changed
 
@@ -80,9 +86,9 @@ The living room at night. You play James.
 | `js/pain.js` | The pain model, ported, with the hairbrush, the paddle and the belt added. |
 | `js/session.js` | The correction, ported. Added: the implements (held, aimed, laid by, marks, sounds, lines, where each is allowed). |
 | `js/implements.js` | New: the hairbrush, the paddle and the belt, built in the hand's frame. |
-| `js/livingroom.js`, `js/kit.js` | The living room, ported. Added: a dining table and an armless dining chair, and `lr.bay()`, which gives the room's positions to the correction, with its cameras and the coffee table moved for the sofa. |
+| `js/livingroom.js`, `js/kit.js` | The living room, ported. Added: a dining table and an armless dining chair, and `lr.bay()`, which gives the room's positions to the correction, with its cameras and the coffee table moved for the sofa. Its low-CPU mode (`setLow`) draws what looks alike as one and turns the glows off. |
 | `js/cast.js`, `js/lines.js` | New for Thorn: Saskia (22, Niamh's friend on the same course, who asked what had changed Niamh, then met James to talk through her goals and his methods); Niamh (21, a musical theatre student he met at the amateur dramatic society; pastoral help first, then this, once he'd told her about Rose and Bethan); Bethan (26, James's colleague, a mother with her partner Will, who knows and supports it), with her own look, lines and terms; Rose (19, at her mum's bakery) as Fenwick wrote her; and James Edwards (37, a tree surgeon) with Fenwick's Silas's temperament and build and his own look: dark brown hair swept back from a left part, a short ginger-brown beard, brown eyes, fair skin, a maroon tee. A couple in the present day. Rose's lines, James's, the aftercare and her terms are rewritten for now (the woods after dark, a dead phone, her nan's), in the same structure. |
-| `js/talk.js`, `js/audio.js`, `js/stage.js` | Conversations, synthesised sound and the renderer, ported. |
+| `js/talk.js`, `js/audio.js`, `js/stage.js` | Conversations, synthesised sound and the renderer, ported. The renderer's low-CPU mode adds a frame cap (`setFps`, 30 in low-CPU mode). |
 | `tools/blender/`, `tools/export-head.js` | The model builds. Hers is built in modern layers, and the hair adds James's styles; the outputs are named `thorn_*`, and `THORN_OUT` builds somewhere else. |
 
 To rebuild the models you need Blender 5 (the `bpy` module from PyPI works, with scikit-image):

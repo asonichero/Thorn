@@ -294,7 +294,7 @@ function build(scene) {
   // ── The furniture, each where the layout puts it (built facing +z: its front toward the room) ──
   const L = ROOM.layout(), pieces = {}, place = (k, at) => { const p = pieces[k]; Object.assign(L[k], at); p.g.position.set(L[k].x, 0, L[k].z); p.g.rotation.y = L[k].ry || 0; p.g.updateMatrixWorld(true); };
   const piece = k => { const g = new THREE.Group(); g.userData.piece = k; G.add(g); pieces[k] = { g, label: LABELS[k] }; place(k, {}); return g; };
-  const lampLights = [];
+  const lampLights = [], glows = [];      // (glows: the small lights, off in low-CPU mode)
   // the corner sofa: dark charcoal, its long side against the desk wall (two seats and the corner, an arm at its open end), its chaise along
   // the end wall (the corner seat backed, the chaise not). Built about its middle: the corner at local (−0.93, −1.2)
   { const g = piece('sofa'), ox = -0.93, oz = -1.2, Dp = 0.92, LONG = 2.4, CH = 1.86, SH = 0.42;
@@ -355,7 +355,7 @@ function build(scene) {
     { const m = new THREE.Group(); m.position.set(-0.62, h, -0.26); g.add(m); cyl(0.07, 0.075, 0.015, champagne, 0, 0.008, 0, m, { seg: 24 }); cyl(0.007, 0.007, 0.5, champagne, 0, 0.26, 0, m);
       const arm = new THREE.Mesh(new THREE.TorusGeometry(0.12, 0.007, 6, 18, Math.PI / 2), champagne); arm.position.set(0.12, 0.51, 0); arm.rotation.set(0, 0, 0); m.add(arm);
       box(0.34, 0.015, 0.03, champagne, 0.29, 0.62, 0, m); box(0.3, 0.004, 0.02, std({ color: srgb('#fff2d8'), emissive: srgb('#fff0d0'), emissiveIntensity: 2.5 }), 0.29, 0.611, 0, m, { noCast: true });
-      const dl = new THREE.PointLight(srgb('#fff0d8'), 1.2, 2.5, 2); dl.position.set(0.3, 0.55, 0); m.add(dl); } }
+      const dl = new THREE.PointLight(srgb('#fff0d8'), 1.2, 2.5, 2); dl.position.set(0.3, 0.55, 0); m.add(dl); glows.push(dl); } }
   // the desk chair: steel-blue fabric, padded arms, on its gas lift and five castors
   { const g = piece('deskChair');
     for (let i = 0; i < 5; i++) { const a = i / 5 * Math.PI * 2, leg = box(0.32, 0.03, 0.05, plasticBlk, Math.sin(a) * 0.16, 0.08, Math.cos(a) * 0.16, g); leg.rotation.y = a + Math.PI / 2; ball(0.03, plasticBlk, Math.sin(a) * 0.31, 0.03, Math.cos(a) * 0.31, g); }
@@ -398,7 +398,7 @@ function build(scene) {
     // (the lava lamp: a silver cone base, the glass, the wax rising in it)
     const lv = new THREE.Group(); lv.position.set(0.12, h1, -0.04); g.add(lv); cyl(0.04, 0.065, 0.13, chrome, 0, 0.065, 0, lv); cyl(0.045, 0.03, 0.2, lavaGlass, 0, 0.23, 0, lv); cyl(0.022, 0.04, 0.045, chrome, 0, 0.355, 0, lv);
     ball(0.02, lavaWax, 0, 0.18, 0, lv, [1, 1.4, 1]); ball(0.014, lavaWax, 0.005, 0.27, 0, lv, [1, 1.3, 1]);
-    const ll = new THREE.PointLight(srgb('#5ac8ff'), 0.6, 1.5, 2); ll.position.set(0, 0.25, 0.05); lv.add(ll); }
+    const ll = new THREE.PointLight(srgb('#5ac8ff'), 0.6, 1.5, 2); ll.position.set(0, 0.25, 0.05); lv.add(ll); glows.push(ll); }
   // the armchair: a deep, wide chair, black leather arms and frame, grey corded cushions in the seat and at its back, two grey cushions
   { const g = piece('armchair'), w = 1.3, d = 0.95;
     rbox(w - 0.3, 0.26, d - 0.1, 0.04, leatherBlk, 0, 0.2, 0.02, g); rbox(w, 0.6, 0.22, 0.06, leatherBlk, 0, 0.62, -d / 2 + 0.11, g);
@@ -436,7 +436,7 @@ function build(scene) {
   let lit = 0, low = false;
   const focus = p => { lit = downs.reduce((b, s, i) => (Math.abs(s.position.z - p.z) < Math.abs(downs[b].position.z - p.z) ? i : b), 0); downs.forEach((s, i) => { s.castShadow = !low && i === lit; }); };
   const under = new THREE.PointLight(srgb('#fff0d8'), 1.2, 2.2, 2); under.position.set(1.1, 1.38, Z1 - 0.2); G.add(under);
-  const scrL = new THREE.PointLight(srgb('#8ad0d0'), 0.5, 2, 2); scrL.position.set(-1.2, 1.2, -0.35); G.add(scrL);
+  const scrL = new THREE.PointLight(srgb('#8ad0d0'), 0.5, 2, 2); scrL.position.set(-1.2, 1.2, -0.35); G.add(scrL); glows.push(scrL);
 
   // ── Which side each thing goes with, for hiding the walls nearest the camera ──
   const bounds = { minX: X0, maxX: X1, minZ: Z0, maxZ: Z1, ht: HT };
@@ -494,9 +494,54 @@ function build(scene) {
       tick: dt => api.tick(dt) };
   };
   let t = 0;
-  const setLow = on => { low = !!on; downs.forEach((s, i) => { s.castShadow = !low && i === lit; }); };
+  // ── Low-CPU mode (Thorn): no shadows, the small glows off (the desk lamp's, the lava lamp's, the monitors'), and the room's 470-odd parts drawn as about 120.
+  // Within each wall and each piece of furniture, the parts that look alike are drawn as one: built the first time it's asked for, and kept.
+  // The parts as built stay where they are, hidden while it's on, so whatever moves a piece or hides a wall or a piece does the same to both. ──
+  const TEX = ['map', 'emissiveMap', 'normalMap', 'roughnessMap', 'metalnessMap', 'bumpMap', 'alphaMap', 'aoMap'];
+  const lookOf = m => {
+    const u = m.userData.u, hex = c => (c && c.isColor ? c.getHexString() : '-');
+    return [m.type, hex(m.color), hex(m.emissive), m.emissiveIntensity, m.roughness, m.metalness, m.side, m.transparent, m.opacity, m.depthWrite, m.depthTest, m.alphaTest,
+      m.polygonOffset, m.flatShading, m.vertexColors, ...TEX.map(k => (m[k] ? m[k].uuid : '-')),
+      u ? [u.uGrain.value, u.uGrainScale.value, hex(u.uRim.value)].join(',') : '-', m.customProgramCacheKey ? m.customProgramCacheKey() : '-'].join('|');
+  };
+  const _rel = new THREE.Matrix4(), _inv = new THREE.Matrix4(), _nm = new THREE.Matrix3(), _p = new V3();
+  function mergeIn(C) {
+    C.updateMatrixWorld(true); _inv.copy(C.matrixWorld).invert();
+    const parts = [], by = new Map();
+    C.traverse(o => { if (!o.isMesh || !o.visible || Array.isArray(o.material) || o.userData.low) return; parts.push(o); const k = lookOf(o.material); if (!by.has(k)) by.set(k, []); by.get(k).push(o); });
+    const made = [];
+    for (const ms of by.values()) {
+      let nv = 0, ni = 0; for (const m of ms) { const g = m.geometry; nv += g.attributes.position.count; ni += g.index ? g.index.count : g.attributes.position.count; }
+      const P = new Float32Array(nv * 3), N = new Float32Array(nv * 3), U = new Float32Array(nv * 2), I = nv > 65535 ? new Uint32Array(ni) : new Uint16Array(ni);
+      let v0 = 0, i0 = 0;
+      for (const m of ms) {
+        const g = m.geometry, gp = g.attributes.position, gn = g.attributes.normal, gu = g.attributes.uv;
+        _rel.multiplyMatrices(_inv, m.matrixWorld); _nm.getNormalMatrix(_rel); const flip = _rel.determinant() < 0;
+        for (let i = 0; i < gp.count; i++) {
+          const j = (v0 + i) * 3; _p.fromBufferAttribute(gp, i).applyMatrix4(_rel); P[j] = _p.x; P[j + 1] = _p.y; P[j + 2] = _p.z;
+          if (gn) { _p.fromBufferAttribute(gn, i).applyMatrix3(_nm).normalize(); N[j] = _p.x; N[j + 1] = _p.y; N[j + 2] = _p.z; }
+          if (gu) { U[(v0 + i) * 2] = gu.getX(i); U[(v0 + i) * 2 + 1] = gu.getY(i); }
+        }
+        const n = g.index ? g.index.count : gp.count, ix = i => (g.index ? g.index.getX(i) : i);
+        for (let t = 0; t < n; t += 3) { const a = ix(t), b = ix(t + 1), c = ix(t + 2); I[i0++] = v0 + a; I[i0++] = v0 + (flip ? c : b); I[i0++] = v0 + (flip ? b : c); }
+        v0 += gp.count;
+      }
+      const g = new THREE.BufferGeometry();
+      g.setAttribute('position', new THREE.BufferAttribute(P, 3)); g.setAttribute('normal', new THREE.BufferAttribute(N, 3)); g.setAttribute('uv', new THREE.BufferAttribute(U, 2)); g.setIndex(new THREE.BufferAttribute(I, 1));
+      g.computeBoundingBox(); g.computeBoundingSphere();
+      const mm = new THREE.Mesh(g, ms[0].material); mm.userData.low = true; mm.castShadow = false; mm.receiveShadow = true; mm.layers.mask = ms[0].layers.mask; mm.visible = false;
+      C.add(mm); made.push(mm);
+    }
+    return { parts, made };
+  }
+  let lowParts = null;
+  const setLow = on => {
+    low = !!on; downs.forEach((s, i) => { s.castShadow = !low && i === lit; }); glows.forEach(l => { l.visible = !low; });
+    if (low && !lowParts) lowParts = G.children.filter(o => o.isGroup).map(mergeIn);
+    if (lowParts) for (const { parts, made } of lowParts) { parts.forEach(m => { m.visible = !low; }); made.forEach(m => { m.visible = low; }); }
+  };
   const api = { group: G, pieces, keys: Object.keys(LAYOUT), place, layout: () => JSON.parse(JSON.stringify(L)), spots, views, bounds, sideOf, sidesAt, resides, name: 'The living room',
-    showMarks: () => {}, hasMarks: false, setLow, focus, bay,
+    showMarks: () => {}, hasMarks: false, setLow, get low() { return low; }, get drawn() { let n = 0; G.traverse(o => { if (o.isMesh && o.visible) n++; }); return n; }, focus, bay,
     tick(dt) { t += dt; void lampLights; lavaWax.emissiveIntensity = 1.5 + 0.2 * Math.sin(t * 0.7); } };
   return api;
 }

@@ -143,3 +143,22 @@ test('Saskia’s show costume: a skirt made for her, raised (its back turned up)
   assert.equal(ev.find(e => e[0] === 'turnEnd')[1].outcome, 'done'); assert.equal(ses.current.f.state.bottoms, 'up', 'her skirt let down again');
   await wait(1700);
 });
+
+test('low-CPU mode: a correction runs the same; her face drawn at most 15 times a second, her pigtails still hanging free', async () => {
+  await loaded;
+  Figure.setLow(true);
+  try {
+    const { ses, ev, lr, step } = setup('table', { implement: 'paddle' }, 'saskia', 'costume'); lr.setLow(true);
+    const f = ses.current.f; let paints = 0; const paint = f.paintFace; f.paintFace = (...a) => { paints++; return paint(...a); };
+    ses.dress({ bottoms: 'down' }); step(60); ses.set({ pace: 2, strength: 1.25 });
+    let secs = 3;
+    for (let i = 0; i < 150 && !(ses.receptive && ses.distress() > 1); i++) { if (ses.covering) ses.tell(); if (!ses.st.running && !ses.busy) ses.run(true); step(10); secs += 0.5; }
+    assert.ok(ses.receptive, 'her defiance gone');
+    assert.ok(paints > 10 && paints <= secs * 15 + 1, `${paints} in ${secs}s`);
+    // (each pigtail: its tip below where it's tied, and not run off)
+    for (const T of f.tails) { const X = T.X, tip = X[X.length - 1]; assert.ok(tip.y < X[1].y, 'hanging'); assert.ok(tip.distanceTo(X[1]) < 0.6, 'still its own length'); }
+    ses.run(false); step(5); ses.endTurn(); step(200); await wait(1000); step(2);
+    assert.equal(ev.find(e => e[0] === 'turnEnd')[1].outcome, 'done');
+    await wait(1700);
+  } finally { Figure.setLow(false); }
+});

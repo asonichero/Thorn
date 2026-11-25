@@ -78,3 +78,23 @@ test('across the knee on the sofa, the coffee table goes back out of the way, an
   assert.ok(f.x0 > S.at.x + 0.9 || f.z1 < S.at.z - 0.9 || f.z0 > S.at.z + 0.9, 'clear of her in front of the sofa: ' + JSON.stringify(f));
   bay.clear('table'); assert.deepEqual(lr.layout().coffeeTable, was);
 });
+
+test('low-CPU mode: the room drawn in about a quarter as many pieces, the same shape and in the same place; no shadows, the glows off; and back', () => {
+  const lr = build(), bay = lr.bay(), full = lr.drawn;
+  // (boxes and triangles from what's shown only)
+  const shown = (o, fn) => o.traverse(m => { if (!m.isMesh) return; for (let p = m; p; p = p.parent) if (!p.visible) return; fn(m); });
+  const box = o => { const b = new THREE.Box3(), v = new THREE.Vector3(); o.updateMatrixWorld(true); shown(o, m => { const p = m.geometry.attributes.position; for (let i = 0; i < p.count; i++) b.expandByPoint(v.fromBufferAttribute(p, i).applyMatrix4(m.matrixWorld)); }); return b; };
+  const tris = o => { let n = 0; shown(o, m => { n += (m.geometry.index ? m.geometry.index.count : m.geometry.attributes.position.count) / 3; }); return n; };
+  const before = lr.keys.map(k => box(lr.pieces[k].g)), t0 = tris(lr.group);
+  lr.setLow(true);
+  assert.ok(lr.low); assert.ok(lr.drawn < full / 3, `${lr.drawn} drawn of ${full}`);
+  assert.equal(tris(lr.group), t0, 'every triangle still there');
+  lr.keys.forEach((k, i) => { const b = box(lr.pieces[k].g); assert.ok(b.min.distanceTo(before[i].min) < 1e-4 && b.max.distanceTo(before[i].max) < 1e-4, k + ' the same'); });
+  let casting = 0, lit = 0; lr.group.traverse(o => { if (o.isLight && o.castShadow) casting++; if (o.isPointLight && o.visible) lit++; });
+  assert.equal(casting, 0, 'no shadows'); assert.equal(lit, 3, 'the floor lamps and the light under the cupboards; the glows off');
+  // (a piece moved takes what's drawn of it along: the coffee table, out of the way for the sofa)
+  bay.clear('otk:sofa'); const f = box(lr.pieces.coffeeTable.g), want = lr.layout().coffeeTable;
+  assert.ok(Math.abs((f.min.x + f.max.x) / 2 - want.x) < 0.05 && Math.abs((f.min.z + f.max.z) / 2 - want.z) < 0.05, 'moved with it');
+  bay.clear('otk'); lr.setLow(false);
+  assert.equal(lr.drawn, full); let back = 0; lr.group.traverse(o => { if (o.isLight && o.castShadow) back++; }); assert.equal(back, 1, 'the one downlight over the scene throws shadows again');
+});

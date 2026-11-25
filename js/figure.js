@@ -1616,6 +1616,9 @@ const _bq = new THREE.Quaternion(), _bq2 = new THREE.Quaternion(), _bv = new V3(
 // (the trunk's back, for the plait to lie on: per bone, over its length (y0–y1, in its own frame, unscaled metres), an ellipse across it,
 // half-width and half-depth about a middle zc: roughly the body's own, measured)
 const BRAID_BODY = [['chest', 0.0, 0.17, 0.135, 0.1, 0.025], ['spine', 0.0, 0.15, 0.12, 0.085, 0.025], ['hips', -0.06, 0.16, 0.15, 0.115, 0.0], ['neck', 0.0, 0.07, 0.06, 0.045, 0.0]];
+// (Thorn: low-CPU mode (Figure.setLow): the hair's chain in fewer, longer steps and fewer passes; the face's layer, a canvas drawn and sent to the
+// card whenever the face moves, drawn at most 15 times a second, the latest of it caught up on the next)
+let LOW = false;
 function tickBraid(F, T, dt) {
   const X = T.X, Xp = T.Xp, W = T.W, nb = X.length, s = F.root.scale.x;
   F.root.updateMatrixWorld(true); T.piv.updateMatrixWorld(true);
@@ -1637,7 +1640,7 @@ function tickBraid(F, T, dt) {
   };
   const jump = !T.live || X[1].distanceToSquared(W[1]) > 0.09;
   if (jump) { for (let i = 0; i < nb; i++) { X[i].copy(W[i]); Xp[i].copy(W[i]); } T.live = true; }
-  const h = 1 / 60, steps = jump ? 240 : Math.min(8, Math.ceil(Math.min(dt, 0.12) / h)), hs = jump ? h : Math.min(dt, 0.12) / steps, damp = jump ? 0.8 : 0.9;
+  const h = LOW ? 1 / 30 : 1 / 60, steps = jump ? 240 : Math.min(LOW ? 3 : 8, Math.ceil(Math.min(dt, 0.12) / h)), hs = jump ? h : Math.min(dt, 0.12) / steps, damp = jump ? 0.8 : LOW ? Math.pow(0.9, hs * 60) : 0.9;      // (low: damped as much a second in fewer steps)
   // (its end heavier: the joints down it slower to take up a swing and quicker to lose it, each drawn a little toward hanging plumb below the
   // one above, more so toward the tie; and in keeping their lengths, a heavier joint gives less than the lighter one above it)
   const mass = i => 1 + 2.5 * Math.pow((i - 1) / (nb - 2), 2);
@@ -1652,7 +1655,7 @@ function tickBraid(F, T, dt) {
       if (i === 2) X[i].lerp(W[i], 1 - Math.exp(-hs * 3));
       else { _bv2.copy(X[i - 1]).sub(X[i - 2]).normalize().multiplyScalar(T.len[i]).add(X[i - 1]); X[i].lerp(_bv2, 1 - Math.exp(-hs * lerp(1.2, 0.2, (i - 3) / Math.max(1, nb - 4)))); }
     }
-    for (let it = 0; it < 3; it++) for (let i = 2; i < nb; i++) {
+    for (let it = 0, its = LOW && !jump ? 2 : 3; it < its; it++) for (let i = 2; i < nb; i++) {
       _bv.copy(X[i]).sub(X[i - 1]); const d = _bv.length() || 1e-6, e = d - T.len[i], wa = i - 1 > 1 ? 1 / mass(i - 1) : 0, wb = 1 / mass(i);
       X[i - 1].addScaledVector(_bv, e / d * wa / (wa + wb)); X[i].addScaledVector(_bv, -e / d * wb / (wa + wb));
       out(X[i]); if (X[i].y < rb) X[i].y = rb;      // (and on the floor)
@@ -1701,7 +1704,8 @@ function tickFace(F, dt) {
   const open = clamp(x.open * (1 - bl), 0, 1.15), d = F.drawn;
   let moved = Math.abs((d.open == null ? -9 : d.open) - open) > 0.004;
   for (const key in x) if (!moved && Math.abs((d[key] == null ? -9 : d[key]) - x[key]) > 0.003) moved = true;
-  if (moved) { F.paintFace(x, open); Object.assign(d, x); d.open = open; }
+  F.faceAge = (F.faceAge || 0) + dt; if (moved && LOW && F.faceAge < 1 / 15) moved = false;
+  if (moved) { F.paintFace(x, open); Object.assign(d, x); d.open = open; F.faceAge = 0; }
   // breathing: the chest rising and the shoulders with it, faster and deeper when worked up (turns only: the skinning keeps volume)
   F.breathT = (F.breathT || 0) + dt * (1.6 + 2.4 * F.breath);
   const b = Math.sin(F.breathT) * (0.012 + 0.022 * F.breath);
@@ -2975,6 +2979,6 @@ function hairTop(F) {
   const b = m ? m.geometry.boundingBox : null, p = new V3(0, b ? b.max.y : 2.12, b ? (b.min.z + b.max.z) * 0.5 * 0.4 : 0);
   H.updateMatrixWorld(true); return H.localToWorld(p);
 }
-const api = { _bodySpheres: bodySpheres, _spheresIn: spheresIn, _CL: CL, carryCloth: F => { if (F.cloth) tickCloth(F, 0); }, presence, tickPresence, need, adoptHair, hairTop, braidTip, hairStyles: () => Object.keys(GLB.hair || {}), tmat, ink, dqs, grip, FINGERS, make, preload, adopt, models: () => Object.keys(GLB.sex), EXPRS, MOUTHS, HEAD_SCALE, OUTFITS, SPOTS, ik2, aim, setWorldQuat, mat, paint, srgb, shade, R };
+const api = { setLow: on => { LOW = !!on; }, get low() { return LOW; }, _bodySpheres: bodySpheres, _spheresIn: spheresIn, _CL: CL, carryCloth: F => { if (F.cloth) tickCloth(F, 0); }, presence, tickPresence, need, adoptHair, hairTop, braidTip, hairStyles: () => Object.keys(GLB.hair || {}), tmat, ink, dqs, grip, FINGERS, make, preload, adopt, models: () => Object.keys(GLB.sex), EXPRS, MOUTHS, HEAD_SCALE, OUTFITS, SPOTS, ik2, aim, setWorldQuat, mat, paint, srgb, shade, R };
 root.Figure = api;
 })(typeof window !== 'undefined' ? window : globalThis);

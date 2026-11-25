@@ -81,6 +81,8 @@ kbd { font: 10px ui-monospace, monospace; color: var(--dim); }
   <h2>Response</h2><div class="row" style="gap:8px"><input type="range" id="resp" min="0" max="100" step="1" style="flex:1;accent-color:var(--amber)"><span id="respV" style="font-size:12px;color:var(--dim);width:34px;text-align:right"></span><button id="respAuto">Auto</button></div>
   <h2>Before it, and sound</h2><div class="row"><button id="terms">Her terms first</button><button id="sound">Sound off</button></div>
   <small class="note">Her terms: the conversation, before you ever correct her, where she asks you and says why, you set out how it works and that none of it is owed, and she agrees and gives her word.</small>
+  <h2>Graphics</h2><div class="row" id="gfx"></div>
+  <small class="note">Low-CPU, for a slower machine or a laptop on battery: 30 frames a second at one pixel per pixel, no bloom or shadows, the room drawn in fewer pieces with its small glows off, and her face and hair updated less often. Kept for next time.</small>
   <div class="row" style="margin-top:12px"><button id="begin" class="on">Begin again</button></div>
   <small class="note">An outfit, or James’s, begins it again. Drag to look round, scroll or pinch to come closer.</small>
 </div>
@@ -127,7 +129,7 @@ const KEY = 'thorn:correction:v1';
 const c01 = x => Math.max(0, Math.min(1, +x || 0));
 const stored = (() => { try { return JSON.parse(localStorage.getItem(KEY) || '{}'); } catch (e) { return {}; } })();
 // (who's corrected: each of them with her own outfit and her own tracks with him, kept between visits; `rel` and `outfit` are hers who's chosen)
-const cfg = Object.assign({ who: Cast.IDS[0], outfitOf: {}, rels: {}, clothes: ['down', 'up', 'up'], sOutfit: Cast.squireOutfits()[0], position: 'otk', expr: 'auto', resp: 0, respAuto: true, terms: false, sound: false }, stored);
+const cfg = Object.assign({ who: Cast.IDS[0], outfitOf: {}, rels: {}, clothes: ['down', 'up', 'up'], sOutfit: Cast.squireOutfits()[0], position: 'otk', expr: 'auto', resp: 0, respAuto: true, terms: false, sound: false, graphics: 'full' }, stored);
 if (stored.rel && !stored.rels) cfg.rels[Cast.IDS[0]] = stored.rel;      // (from before there was more than one)
 if (q.get('who')) cfg.who = q.get('who'); if (!Cast.ROSTER[cfg.who]) cfg.who = Cast.IDS[0];
 for (const id of Cast.IDS) cfg.rels[id] = Object.assign({ defiance: Cast.ROSTER[id].meters.wilfulness, submission: 0, desire: 0, comfort: 0, resentment: 0 }, cfg.rels[id]);
@@ -144,6 +146,7 @@ if (q.get('clothes')) cfg.clothes = q.get('clothes').split(',');
 for (const [k, p] of [['defiance', 'def'], ['submission', 'sub'], ['desire', 'des'], ['comfort', 'com'], ['resentment', 'res']]) if (q.get(p) != null) cfg.rel[k] = c01(q.get(p));
 if (q.get('expr')) cfg.expr = q.get('expr'); if (q.get('resp')) { cfg.respAuto = q.get('resp') === 'auto'; if (!cfg.respAuto) cfg.resp = c01(q.get('resp')); }
 if (q.get('terms')) cfg.terms = q.get('terms') === '1';
+if (q.get('low')) cfg.graphics = q.get('low') === '1' ? 'low' : 'full';
 const SOUTFITS = Cast.squireOutfits().concat(['none']), POS = LivingRoom.POSITIONS;
 if (!SOUTFITS.includes(cfg.sOutfit)) cfg.sOutfit = SOUTFITS[0]; if (!POS.some(p => p[0] === cfg.position)) cfg.position = 'otk';
 const specFor = () => Cast.figureSpec(ID, 'f', cfg.outfit);
@@ -160,6 +163,13 @@ if (stage.grade && stage.grade.uniforms) { stage.grade.uniforms.uShadow.value.se
 if (stage.bloom) { stage.bloom.strength = 0.32; stage.bloom.threshold = 0.95; }
 const lr = LivingRoom.build(stage.scene), bay = lr.bay();
 bay.clear(cfg.position);
+// (low-CPU mode: the stage's (its pixels, no bloom, 30 frames a second), the room's (no shadows, its glows off, drawn in fewer pieces) and the
+// figures' (her face and hair updated less often), all at once, whenever it's changed)
+function setGraphics(v) {
+  cfg.graphics = v === 'low' ? 'low' : 'full'; const on = cfg.graphics === 'low';
+  if (stage.low !== on) stage.setLow(on); if (lr.low !== on) lr.setLow(on); Figure.setLow(on);
+}
+setGraphics(cfg.graphics);
 
 // ── The correction ──
 let ses = null, beginning = 0, last = null;
@@ -357,6 +367,7 @@ function refresh() {
   seg('outfit', OUTFITS.map(o => [o, o === 'none' ? 'None' : o, o === 'none' ? 'Nothing on, to see how the body moves' : Cast.OUTFIT_NOTES[o]]), cfg.outfit, v => { cfg.outfit = cfg.outfitOf[ID] = v; save(); audioOn(); models.then(begin); });
   seg('sout', SOUTFITS.map(o => [o, o === 'none' ? 'None' : o, o === 'none' ? 'Nothing on' : Cast.OUTFIT_NOTES[o]]), cfg.sOutfit, v => { cfg.sOutfit = v; save(); audioOn(); models.then(begin); });
   seg('pos', POS.map(([v, nm]) => [v, nm]), cfg.position, setPosition);
+  seg('gfx', [['full', 'Full', 'Everything: shadows, bloom, the screen’s full sharpness'], ['low', 'Low-CPU', 'Lighter on a slower machine or a battery']], cfg.graphics, v => { setGraphics(v); save(); refresh(); });
   $('posNote').textContent = NOTES[cfg.position] || '';
   $('expr').value = cfg.expr; $('respAuto').classList.toggle('on', cfg.respAuto); $('terms').classList.toggle('on', cfg.terms);
   $('sound').textContent = cfg.sound ? 'Sound on' : 'Sound off'; $('sound').classList.toggle('on', cfg.sound);
@@ -430,7 +441,7 @@ models.then(() => {
   if (!cfg.terms) begin(); else { stage.go(new V3(1.2, 1.55, 2.6), new V3(-0.6, 0.9, -1.2)); refresh(); }
   // (?still=1: nothing moves till it's stepped: window.step(n) n frames drawn, window.sim(n) n frames of the correction without drawing them)
   if (still) { stage.controls.enableDamping = false; window.step = (n, dt) => { for (let i = 0; i < n; i++) stage.step((dt || 0.05) * 1000, each); }; window.sim = (n, dt) => { for (let i = 0; i < n; i++) each(dt || 0.05); };
-    window.step(4); window.ready = true; }
+    window.stage = stage; window.room = lr; window.step(4); window.ready = true; }
   else { stage.start(each); window.ready = true; }
 });
 </script></body></html>
